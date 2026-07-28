@@ -524,8 +524,14 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
         </div>
       </div>
 
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-secondary);cursor:pointer;">
+          <input type="checkbox" id="acq-mostra-presi"> mostra anche i giocatori già presi
+        </label>
+      </div>
+
       <table class="player-table">
-        <thead><tr><th>Giocatore</th><th>Base</th><th>Prezzo atteso</th><th>Convenienza</th><th>Metriche</th></tr></thead>
+        <thead><tr><th>Giocatore</th><th>Base</th><th>Prezzo atteso</th><th>Convenienza</th><th>Metriche</th><th>Note</th></tr></thead>
         <tbody id="acq-tbody"></tbody>
       </table>
     </section>
@@ -757,6 +763,20 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
       </div>
     </section>
 
+    <div class="card" style="margin:0 28px 20px;">
+      <span class="field-label">Leggenda</span>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px 28px;margin-top:10px;font-size:12.5px;color:var(--text-secondary);line-height:1.7;">
+        <div><b style="color:var(--accent);">Convenienza</b> — quanto conviene prendere il giocatore rispetto al miglior sostituto che resterebbe libero, diviso il prezzo atteso. Più alto = affare migliore. Può essere negativo (lo paghi più di quanto rende sul sostituto).</div>
+        <div><b style="color:var(--accent);">Prezzo atteso</b> — stima di quanto verrà pagato davvero all'asta: base × moltiplicatore (di default 1,9, perché in una lega a 6 girano quasi il doppio dei crediti necessari). Non è la base d'asta.</div>
+        <div><b style="color:var(--accent);">Base</b> — quotazione minima da cui parte l'asta. Ad agosto è la quotazione iniziale (Qt.I), a gennaio quella attuale (Qt.A).</div>
+        <div><b style="color:var(--accent);">Mv</b> (media voto) — voto medio puro, senza bonus/malus. È la metrica del modificatore di difesa: conta per portieri e difensori. <b style="color:var(--accent);">Fm</b> (fantamedia) — voto medio con bonus e malus: conta per centrocampisti e attaccanti.</div>
+        <div><b style="color:var(--accent);">Pv</b> (presenze a voto) — quante giornate il giocatore ha preso un voto la scorsa stagione. Indica la continuità: un difensore che gioca sempre attiva il modificatore più spesso.</div>
+        <div><b style="color:var(--accent);">Titolarità</b> — percentuale indicativa di quanto è titolare (da inserire quando disponibile). <b style="color:var(--accent);">Note</b> — appunti tuoi per giocatore, condivisi tra "Chi acquistare" e il listone.</div>
+        <div><span class="role-badge sm r-p" style="display:inline-flex;vertical-align:middle;">P</span> <span class="role-badge sm r-d" style="display:inline-flex;vertical-align:middle;">D</span> <span class="role-badge sm r-c" style="display:inline-flex;vertical-align:middle;">C</span> <span class="role-badge sm r-a" style="display:inline-flex;vertical-align:middle;">A</span> — colori dei ruoli: portiere, difensore, centrocampista, attaccante.</div>
+        <div><b style="color:var(--accent);">★</b> accanto a una squadra = FC Albaredo (la tua). Un giocatore <span style="text-decoration:line-through;">barrato</span> è già stato assegnato, con accanto chi l'ha preso e a quanto.</div>
+      </div>
+    </div>
+
     <div class="footer-note">FantaIgor2026 — dati salvati in locale (IndexedDB) + backup su file. Chrome/Edge desktop.</div>
 
   </div>
@@ -914,7 +934,10 @@ const AppState = {
     listoneFiltri: { cerca: "", ruolo: "", squadra: "", stato: "", soloNote: "" },
     notaInModifica: null,
     // Override manuale del turno: id partecipante forzato, oppure null = calcolo automatico
-    turnoOverride: null
+    turnoOverride: null,
+    // Chi acquistare: mostra anche i presi (barrati), e id nota in modifica
+    acqMostraPresi: false,
+    acqNotaInModifica: null
   }
 };
 
@@ -939,9 +962,49 @@ function salvaNotaGiocatore(id, testo) {
 }
 
 /* ---------------------------------------------------------
-   3. STORAGE — persistenza (Fase 4)
-   Oggetto separato da AppState, come da template §4 (Fase 4:
-   "oggetto API/Storage separato da AppState").
+   SUONI — sintetizzati via Web Audio API, nessun file esterno.
+   Rispetta muto e volume dalle impostazioni.
+--------------------------------------------------------- */
+const Suoni = {
+  ctx: null,
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // i browser sospendono l'audio finché non c'è un gesto utente: lo riprendo
+    if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+  },
+  /** Suona una sequenza di note. Ogni nota: {f frequenza, d durata, t tipo, delay}. */
+  play(note, volBase) {
+    if (AppState.impostazioni.muto) return;
+    this.init();
+    if (!this.ctx) return;
+    const vol = (volBase != null ? volBase : 0.5) * (AppState.impostazioni.volume != null ? AppState.impostazioni.volume : 0.6);
+    const t0 = this.ctx.currentTime;
+    for (const n of note) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = n.t || "sine";
+      osc.frequency.value = n.f;
+      const start = t0 + (n.delay || 0);
+      const dur = n.d || 0.12;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(vol, start + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(start); osc.stop(start + dur + 0.02);
+    }
+  },
+  acquisto() { this.play([{f:523,d:.10,t:"triangle"},{f:659,d:.10,t:"triangle",delay:.09},{f:784,d:.16,t:"triangle",delay:.18}], 0.55); }, // do-mi-sol ascendente
+  acquistoUtente() { this.play([{f:523,d:.10,t:"triangle"},{f:659,d:.10,t:"triangle",delay:.08},{f:784,d:.12,t:"triangle",delay:.16},{f:1047,d:.22,t:"triangle",delay:.26}], 0.6); }, // fanfara più lunga per FC Albaredo
+  errore() { this.play([{f:200,d:.18,t:"sawtooth"},{f:150,d:.22,t:"sawtooth",delay:.10}], 0.4); },
+  click() { this.play([{f:660,d:.05,t:"sine"}], 0.25); },
+  annulla() { this.play([{f:392,d:.10,t:"sine"},{f:294,d:.14,t:"sine",delay:.08}], 0.35); }
+};
+
+
+/* ---------------------------------------------------------
+   STORAGE — persistenza (IndexedDB + backup su file)
 --------------------------------------------------------- */
 const DB_NAME = "fantaigor2026";
 const DB_VERSION = 1;
@@ -1638,22 +1701,73 @@ function renderChiAcquistare() {
   const squadraFiltro = document.getElementById("acq-filtro-squadra").value;
   const prezzoFiltro = document.getElementById("acq-filtro-prezzo").value;
   const presenzeFiltro = parseInt(document.getElementById("acq-filtro-presenze").value, 10) || 0;
+  const mostraPresi = AppState.ui.acqMostraPresi;
+
   const opts = { presenzeMin: presenzeFiltro || undefined };
   if (squadraFiltro) opts.squadra = squadraFiltro;
   if (prezzoFiltro) { const [min, max] = prezzoFiltro.split("-").map(Number); opts.prezzoMin = min; opts.prezzoMax = max; }
-  const righe = suggerimentiPerRuolo(ruolo, opts);
+
+  // suggerimenti (solo liberi) per la convenienza; poi eventualmente aggiungo i presi
+  const liberiRighe = suggerimentiPerRuolo(ruolo, opts);
+  let righe = liberiRighe.map(x => ({ g: x.giocatore, convenienza: x.convenienza, preso: false }));
+
+  if (mostraPresi) {
+    const assegnati = idGiocatoriAssegnati();
+    const tuttiLiberiCatalogo = giocatoriLiberi();
+    let presi = AppState.catalogo.filter(g => g.ruolo === ruolo && assegnati.has(g.id));
+    if (squadraFiltro) presi = presi.filter(g => g.squadra === squadraFiltro);
+    if (presenzeFiltro) presi = presi.filter(g => (g.pv || 0) >= presenzeFiltro);
+    if (prezzoFiltro) { const [min, max] = prezzoFiltro.split("-").map(Number); presi = presi.filter(g => baseAsta(g) >= min && baseAsta(g) <= max); }
+    // la convenienza dei presi la calcolo comunque, per coerenza visiva
+    const presiRighe = presi.map(g => ({ g, convenienza: calcolaConvenienza(g, tuttiLiberiCatalogo), preso: true }));
+    righe = righe.concat(presiRighe);
+  }
+
   if (righe.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-note">Nessun giocatore libero corrisponde ai filtri.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
     return;
   }
-  tbody.innerHTML = righe.map(({ giocatore: g, convenienza }) => `
-    <tr>
-      <td><div class="player-name-cell"><span class="role-badge r-${g.ruolo.toLowerCase()}">${g.ruolo}</span><div>${g.nome}<div class="sq">${g.squadra}</div></div></div></td>
+
+  tbody.innerHTML = righe.map(({ g, convenienza, preso }) => {
+    const info = preso ? infoAcquisto(g.id) : null;
+    const nota = notaDi(g.id);
+    const inModifica = AppState.ui.acqNotaInModifica === g.id;
+    const notaCell = inModifica
+      ? `<textarea class="l-nota-edit acq-nota-edit" data-id="${g.id}">${nota.replace(/</g,"&lt;")}</textarea>`
+      : `<span class="l-nota-text acq-nota-text${nota ? "" : " vuota"}" data-id="${g.id}">${nota ? nota.replace(/</g,"&lt;") : "aggiungi nota…"}</span>`;
+    const convHtml = convenienza != null
+      ? `<span class="score-pill${convenienza < 0 ? " neg" : ""}">${convenienza >= 0 ? "+" : ""}${fmt(convenienza * 100)}</span>`
+      : `<span style="color:var(--text-dim);">—</span>`;
+    return `<tr${preso ? ' style="opacity:.5;"' : ''}>
+      <td><div class="player-name-cell"><span class="role-badge r-${g.ruolo.toLowerCase()}">${g.ruolo}</span><div><span${preso ? ' style="text-decoration:line-through;"' : ''}>${g.nome}</span><div class="sq">${g.squadra}${info ? ` · <span style="color:var(--accent);">${info.squadra} · ${info.prezzo}</span>` : ""}</div></div></div></td>
       <td class="num">${baseAsta(g)}</td>
       <td class="num">${Math.round(baseAsta(g) * AppState.impostazioni.moltiplicatorePrezzo)}</td>
-      <td><span class="score-pill${convenienza < 0 ? " neg" : ""}">${convenienza >= 0 ? "+" : ""}${fmt(convenienza * 100)}</span></td>
-      <td><span class="metric-tag">Pv ${g.pv ?? "—"}</span><span class="metric-tag">${g.ruolo === "P" || g.ruolo === "D" ? "Mv " + g.mv.toFixed(2) : "Fm " + g.fm.toFixed(2)}</span></td>
-    </tr>`).join("");
+      <td>${convHtml}</td>
+      <td><span class="metric-tag">Pv ${g.pv ?? "—"}</span><span class="metric-tag">${g.ruolo === "P" || g.ruolo === "D" ? "Mv " + (g.mv != null ? g.mv.toFixed(2) : "—") : "Fm " + (g.fm != null ? g.fm.toFixed(2) : "—")}</span></td>
+      <td class="l-nota-cell">${notaCell}</td>
+    </tr>`;
+  }).join("");
+
+  // note editabili (stesso dato del listone, legato all'Id)
+  tbody.querySelectorAll(".acq-nota-text").forEach(el => {
+    el.addEventListener("click", () => { AppState.ui.acqNotaInModifica = Number(el.dataset.id); renderChiAcquistare(); });
+  });
+  const ta = tbody.querySelector(".acq-nota-edit");
+  if (ta) {
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    const chiudi = () => {
+      salvaNotaGiocatore(Number(ta.dataset.id), ta.value);
+      AppState.ui.acqNotaInModifica = null;
+      renderChiAcquistare();
+      renderListone(); // sincronizzo la stessa nota nel listone
+    };
+    ta.addEventListener("blur", chiudi);
+    ta.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chiudi(); }
+      if (e.key === "Escape") { AppState.ui.acqNotaInModifica = null; renderChiAcquistare(); }
+    });
+  }
 }
 
 function renderFiltroSquadre() {
@@ -1866,6 +1980,7 @@ function renderListone() {
       salvaNotaGiocatore(Number(ta.dataset.id), ta.value);
       AppState.ui.notaInModifica = null;
       renderListone();
+      renderChiAcquistare(); // sincronizzo la stessa nota in Chi acquistare
     };
     ta.addEventListener("blur", chiudi);
     ta.addEventListener("keydown", e => {
@@ -2115,11 +2230,11 @@ document.getElementById("btn-conferma").addEventListener("click", () => {
   const partecipanteId = document.getElementById("assign-partecipante").value;
   const prezzo = parseInt(prezzoInput.value, 10);
 
-  if (giocatoreId == null) { errEl.textContent = "Seleziona prima un giocatore dalla ricerca."; errEl.classList.add("show"); return; }
-  if (!Number.isFinite(prezzo)) { errEl.textContent = "Inserisci un prezzo valido."; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); return; }
+  if (giocatoreId == null) { errEl.textContent = "Seleziona prima un giocatore dalla ricerca."; errEl.classList.add("show"); Suoni.errore(); return; }
+  if (!Number.isFinite(prezzo)) { errEl.textContent = "Inserisci un prezzo valido."; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); Suoni.errore(); return; }
 
   const risultato = eseguiAssegnazione(giocatoreId, partecipanteId, prezzo);
-  if (!risultato.ok) { errEl.textContent = risultato.errore; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); return; }
+  if (!risultato.ok) { errEl.textContent = risultato.errore; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); Suoni.errore(); return; }
   if (risultato.sforato) {
     sforamentoEl.textContent = "⚠ Offerta oltre la soglia sostenibile per questo partecipante — registrata comunque, correggi i crediti cliccandoci sopra se necessario.";
     sforamentoEl.classList.add("show");
@@ -2129,16 +2244,18 @@ document.getElementById("btn-conferma").addEventListener("click", () => {
   deselezionaGiocatore();
   prezzoInput.value = "";
   renderTutto();
-  // festa solo quando il giocatore lo prende FC Albaredo
-  if (pAcq && pAcq.is_utente) festaAcquisto(gAcq ? gAcq.nome : "Giocatore", `${pAcq.nome_squadra} · ${prezzo} crediti`);
+  // festa + fanfara solo quando il giocatore lo prende FC Albaredo
+  if (pAcq && pAcq.is_utente) { festaAcquisto(gAcq ? gAcq.nome : "Giocatore", `${pAcq.nome_squadra} · ${prezzo} crediti`); Suoni.acquistoUtente(); }
+  else Suoni.acquisto();
   showToast("Acquisto registrato.");
 });
 
 document.getElementById("btn-annulla").addEventListener("click", () => {
   const rimosso = annullaUltimoAcquisto();
-  if (!rimosso) { showToast("Nessun acquisto da annullare.", true); return; }
+  if (!rimosso) { showToast("Nessun acquisto da annullare.", true); Suoni.errore(); return; }
   const g = AppState.catalogo.find(x => x.id === rimosso.giocatore_id);
   renderTutto();
+  Suoni.annulla();
   showToast(`Annullato: ${g ? g.nome : "giocatore"}.`);
 });
 
@@ -2154,6 +2271,7 @@ document.getElementById("acq-role-filter").addEventListener("change", e => { App
 document.getElementById("acq-filtro-squadra").addEventListener("change", renderChiAcquistare);
 document.getElementById("acq-filtro-prezzo").addEventListener("change", renderChiAcquistare);
 document.getElementById("acq-filtro-presenze").addEventListener("change", renderChiAcquistare);
+document.getElementById("acq-mostra-presi").addEventListener("change", e => { AppState.ui.acqMostraPresi = e.target.checked; renderChiAcquistare(); });
 
 document.getElementById("param-moltiplicatore").addEventListener("change", e => {
   const v = parseFloat(e.target.value.replace(",", "."));
@@ -2169,6 +2287,7 @@ document.getElementById("toggle-muto").addEventListener("click", function() {
   AppState.impostazioni.muto = !AppState.impostazioni.muto;
   this.classList.toggle("on", AppState.impostazioni.muto);
   Storage.salvaStatoCaldo();
+  if (!AppState.impostazioni.muto) { Suoni.init(); Suoni.click(); } // feedback quando riattivi
 });
 document.getElementById("volume-range").addEventListener("input", e => {
   AppState.impostazioni.volume = e.target.value / 100;
@@ -2349,6 +2468,10 @@ async function avvia() {
   // sincronizzo il campo crediti iniziali col valore effettivo
   document.getElementById("param-crediti-iniziali").value = AppState.partecipanti[0].crediti_iniziali;
   document.getElementById("param-moltiplicatore").value = AppState.impostazioni.moltiplicatorePrezzo;
+  // sincronizzo audio
+  document.getElementById("toggle-muto").classList.toggle("on", AppState.impostazioni.muto);
+  document.getElementById("volume-range").value = Math.round((AppState.impostazioni.volume ?? 0.6) * 100);
+  document.getElementById("volume-note").textContent = Math.round((AppState.impostazioni.volume ?? 0.6) * 100) + "%";
 
   // il rendering della barra di stato (tempo trascorso dall'ultimo backup) si aggiorna da solo
   setInterval(() => { renderHeaderStatus(); renderBackupSettings(); }, 5000);
