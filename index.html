@@ -1,0 +1,2369 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FantaIgor2026</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg: #0b0d10;
+  --surface: #12151a;
+  --surface-raised: #171b21;
+  --border: #1e232b;
+  --text: #e8eaed;
+  --text-secondary: #8b939e;
+  --text-dim: #5a6270;
+  --accent: #d4af37;
+  --allerta: #e2574c;
+  --role-p: #f0a500;
+  --role-d: #4a90d9;
+  --role-c: #3ddc84;
+  --role-a: #e2574c;
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+*{ box-sizing: border-box; margin:0; padding:0; }
+html, body{ background: var(--bg); color: var(--text); font-family: var(--font-body); min-width: 1280px; }
+body{ line-height: 1.5; }
+.sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+::selection{ background: var(--accent); color:#0b0d10; }
+a{ color:inherit; }
+:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+.num{ font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+button{ font: inherit; }
+
+.screen-radio, .tab-radio{ position:absolute; opacity:0; pointer-events:none; width:0; height:0; }
+.app-root{ min-height:100vh; }
+.splash{ display:flex; }
+.shell{ display:none; }
+.app-root:has(#screen-app:checked) .splash{ display:none; }
+.app-root:has(#screen-app:checked) .shell{ display:block; }
+
+.splash{
+  min-height:100vh; align-items:center; justify-content:center; flex-direction:column; gap:22px;
+  background: radial-gradient(ellipse 900px 500px at 50% -10%, rgba(212,175,55,.08), transparent 60%), var(--bg);
+  text-align:center; padding:40px;
+}
+.splash-crest{
+  width:88px; height:88px; border-radius:20px;
+  background: linear-gradient(155deg, var(--surface-raised), var(--surface));
+  border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:34px; font-weight:700; color:var(--accent);
+  box-shadow: 0 0 0 1px rgba(212,175,55,.08), 0 20px 40px -20px rgba(212,175,55,.25);
+}
+.splash-title{ font-family:var(--font-display); font-weight:700; font-size:44px; letter-spacing:.5px; text-transform:uppercase; }
+.splash-title span{ color:var(--accent); }
+.splash-sub{ color:var(--text-secondary); font-size:15px; max-width:400px; }
+.btn-enter{
+  margin-top:8px; display:inline-flex; align-items:center; gap:10px; background: var(--accent); color:#141005;
+  font-family:var(--font-display); font-weight:600; font-size:15px; letter-spacing:.4px; text-transform:uppercase;
+  padding:14px 34px; border-radius: 999px; cursor:pointer; border:none;
+}
+.btn-enter.secondary{ background: transparent; border:1px solid var(--border); color: var(--text-secondary); }
+.splash-actions{ display:flex; gap:10px; align-items:center; }
+.splash-status{ display:flex; flex-direction:column; gap:8px; margin-top:6px; max-width:420px; }
+.splash-note{ font-size:12.5px; color:var(--text-dim); display:flex; align-items:center; gap:7px; justify-content:center; }
+.splash-note.warn{ color: var(--allerta); }
+.dot{ width:6px; height:6px; border-radius:50%; background:var(--text-dim); flex:none; }
+.dot.ok{ background: var(--role-c); }
+.dot.err{ background: var(--allerta); }
+
+.shell-header{
+  display:flex; align-items:center; justify-content:space-between; padding:14px 28px;
+  border-bottom:1px solid var(--border); background: var(--surface); position:sticky; top:0; z-index:10;
+}
+.brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:600; font-size:17px; letter-spacing:.3px; }
+.brand .mark{
+  width:28px; height:28px; border-radius:7px; background: var(--surface-raised); border:1px solid var(--border);
+  color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:14px;
+}
+.brand b{ color:var(--accent); font-weight:600; }
+nav.tabs{ display:flex; gap:4px; }
+nav.tabs label{
+  font-family:var(--font-display); font-size:13px; font-weight:500; letter-spacing:.3px; text-transform:uppercase;
+  color:var(--text-secondary); padding:9px 16px; border-radius:999px; cursor:pointer; border:1px solid transparent;
+}
+nav.tabs label:hover{ color:var(--text); }
+.shell:has(#tab-acquistare:checked) label[for="tab-acquistare"],
+.shell:has(#tab-asta:checked) label[for="tab-asta"],
+.shell:has(#tab-squadre:checked) label[for="tab-squadre"],
+.shell:has(#tab-impostazioni:checked) label[for="tab-impostazioni"],
+.shell:has(#tab-albaredo:checked) label[for="tab-albaredo"]{
+  color: var(--bg); background: var(--accent); border-color: var(--accent);
+}
+.header-status{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-dim); cursor:default; }
+.header-status .dot{ background: var(--role-c); }
+.header-status.err .dot{ background: var(--allerta); }
+.header-status.warn .dot{ background: var(--role-p); }
+
+/* ---- banner di persistenza, sotto l'header, persistente finché non risolto ---- */
+.persist-banner{
+  display:none; align-items:center; justify-content:space-between; gap:16px;
+  padding:11px 28px; font-size:13px; border-bottom:1px solid var(--border);
+}
+.persist-banner.show{ display:flex; }
+.persist-banner.err{ background: rgba(226,87,76,.10); color: var(--allerta); border-color: rgba(226,87,76,.3); }
+.persist-banner.info{ background: rgba(212,175,55,.08); color: var(--accent); border-color: rgba(212,175,55,.25); }
+.persist-banner .btn{ flex:none; }
+
+.panel{ display:none; padding:24px 28px 64px; max-width:1600px; margin:0 auto; }
+.shell:has(#tab-acquistare:checked) .panel-acquistare{ display:block; }
+.shell:has(#tab-asta:checked) .panel-asta{ display:block; }
+.shell:has(#tab-squadre:checked) .panel-squadre{ display:block; }
+.shell:has(#tab-impostazioni:checked) .panel-impostazioni{ display:block; }
+.shell:has(#tab-albaredo:checked) .panel-albaredo{ display:block; }
+
+.panel-title{ font-family:var(--font-display); font-size:22px; font-weight:600; margin-bottom:4px; }
+.panel-sub{ color:var(--text-secondary); font-size:13.5px; margin-bottom:22px; }
+
+.card{ background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); padding:16px 18px; }
+
+.role-badge{
+  width:22px; height:22px; flex:none; border-radius:6px; font-weight:700; font-size:11.5px;
+  display:inline-flex; align-items:center; justify-content:center; color:#0b0d10; font-family:var(--font-display);
+}
+.role-badge.sm{ width:16px; height:16px; font-size:9px; }
+.role-badge.xs{ width:14px; height:14px; font-size:8px; }
+.role-badge.r-p{ background: var(--role-p); }
+.role-badge.r-d{ background: var(--role-d); }
+.role-badge.r-c{ background: var(--role-c); }
+.role-badge.r-a{ background: var(--role-a); }
+
+.btn{
+  font-family:var(--font-body); font-weight:600; font-size:13.5px; padding:10px 18px; border-radius: var(--radius-sm);
+  border:1px solid var(--border); background: var(--surface-raised); color:var(--text); cursor:pointer;
+}
+.btn:hover{ border-color: var(--text-dim); }
+.btn:disabled{ opacity:.4; cursor:not-allowed; }
+.btn-primary{ background: var(--accent); border-color: var(--accent); color:#141005; }
+.btn-danger{ background: transparent; border-color: rgba(226,87,76,.4); color: var(--allerta); }
+.btn-sm{ padding:6px 12px; font-size:12px; }
+
+.field-label{ font-size:11.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim); font-weight:600; margin-bottom:6px; display:block; }
+.input, select.input{
+  width:100%; background: var(--surface-raised); border:1px solid var(--border); border-radius: var(--radius-sm);
+  color:var(--text); font-family:var(--font-body); font-size:13.5px; padding:10px 12px;
+}
+.input::placeholder{ color: var(--text-dim); }
+.input.input-error{ border-color: var(--allerta); }
+.field-error{ font-size:11.5px; color:var(--allerta); margin-top:5px; display:none; }
+.field-error.show{ display:block; }
+
+.role-filter-row{ display:flex; gap:8px; margin-bottom:16px; }
+.role-filter-row label{
+  font-family:var(--font-display); font-size:13px; letter-spacing:.4px; text-transform:uppercase; padding:8px 18px;
+  border-radius:8px; border:1px solid var(--border); background:var(--surface); cursor:pointer; color:var(--text-secondary);
+}
+.role-filter-row input{ position:absolute; opacity:0; width:0; height:0; }
+.role-filter-row label:has(input:checked){ border-color: var(--accent); color: var(--accent); background: rgba(212,175,55,.08); }
+
+.filters-bar{ display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-bottom:18px; }
+
+table.player-table{ width:100%; border-collapse: collapse; }
+table.player-table thead th{
+  text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim);
+  font-weight:600; padding:10px 12px; border-bottom:1px solid var(--border);
+}
+table.player-table tbody td{ padding:12px; border-bottom:1px solid var(--border); font-size:13.5px; }
+table.player-table tbody tr:hover{ background: var(--surface); }
+.player-name-cell{ display:flex; align-items:center; gap:10px; }
+.player-name-cell .sq{ color:var(--text-dim); font-size:12px; }
+.score-pill{ font-family:var(--font-display); font-weight:600; font-size:13px; color: var(--role-c); }
+.score-pill.neg{ color: var(--allerta); }
+.metric-tag{ font-size:11px; color:var(--text-dim); background:var(--surface-raised); padding:2px 7px; border-radius:5px; margin-right:4px; display:inline-block; }
+.empty-note{ padding:20px; text-align:center; color:var(--text-dim); font-size:12.5px; }
+
+.turno-banner{
+  display:flex; align-items:center; justify-content:space-between;
+  background: linear-gradient(90deg, rgba(212,175,55,.10), rgba(212,175,55,.02));
+  border:1px solid rgba(212,175,55,.35); border-radius: var(--radius); padding:14px 22px; margin-bottom:20px;
+}
+.turno-banner.chiusa{ border-color: var(--role-c); background: linear-gradient(90deg, rgba(61,220,132,.10), rgba(61,220,132,.02)); }
+.turno-label{ font-size:11px; text-transform:uppercase; letter-spacing:.7px; color:var(--text-dim); }
+.turno-value{ font-family:var(--font-display); font-weight:700; font-size:22px; color: var(--accent); letter-spacing:.3px; }
+.turno-ruolo{ display:flex; align-items:center; gap:8px; }
+.turno-ruolo .role-badge{ width:30px; height:30px; font-size:14px; }
+
+.asta-grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap:20px; }
+.asta-col{ display:flex; flex-direction:column; gap:16px; }
+
+.autocomplete-wrap{ position:relative; }
+.autocomplete-list{
+  position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20;
+  background: var(--surface-raised); border:1px solid var(--border); border-radius: var(--radius-sm);
+  max-height:220px; overflow-y:auto; display:none;
+}
+.autocomplete-list.open{ display:block; }
+.autocomplete-item{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 12px; font-size:13px; cursor:pointer; border-bottom:1px solid var(--border);
+}
+.autocomplete-item:last-child{ border-bottom:none; }
+.autocomplete-item:hover, .autocomplete-item.active{ background: rgba(212,175,55,.10); }
+.autocomplete-item .left{ display:flex; align-items:center; gap:8px; }
+.autocomplete-item .sq{ color:var(--text-dim); font-size:11.5px; }
+.autocomplete-item .base{ color:var(--text-dim); font-size:11.5px; }
+.autocomplete-item.taken{ opacity:.4; cursor:not-allowed; }
+
+.selected-player-chip{
+  display:none; align-items:center; justify-content:space-between; gap:8px;
+  background: var(--surface-raised); border:1px solid var(--border); border-radius: var(--radius-sm);
+  padding:8px 12px; margin-top:8px; font-size:13px;
+}
+.selected-player-chip.show{ display:flex; }
+.selected-player-chip .rm{ color:var(--text-dim); cursor:pointer; font-size:12px; }
+
+.assign-row{ display:grid; grid-template-columns: 1fr 140px; gap:10px; margin-top:12px; }
+.assign-actions{ display:flex; gap:10px; margin-top:14px; align-items:center; }
+.sforamento-note{ font-size:11.5px; color:var(--allerta); margin-top:8px; display:none; }
+.sforamento-note.show{ display:block; }
+
+.suggerimenti-list{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.sugg-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-raised); }
+.sugg-item .name{ flex:1; font-size:13.5px; }
+.sugg-item .sq{ color:var(--text-dim); font-size:11px; }
+.sugg-item .val{ font-family:var(--font-display); color:var(--role-c); font-weight:600; font-size:13px; }
+
+.partecipante-row{ display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.partecipante-row:last-child{ border-bottom:none; }
+.partecipante-row .pname{ display:flex; align-items:center; gap:8px; }
+.turno-dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none; }
+.turno-dot.inactive{ background:transparent; }
+.pcredits-wrap{ display:flex; align-items:center; gap:6px; }
+.pcredits{ font-family:var(--font-display); font-weight:600; color:var(--text); min-width:44px; text-align:right; cursor:pointer; border-bottom:1px dashed var(--text-dim); }
+.pcredits:hover{ color: var(--accent); }
+.pcredits.low{ color: var(--allerta); }
+.pcredits.corretto::after{ content:'✎'; font-size:9px; margin-left:3px; color: var(--accent); }
+.pslots{ color:var(--text-dim); font-size:11.5px; min-width:110px; text-align:right; }
+
+.squadre-live{ display:flex; flex-direction:column; gap:14px; max-height:360px; overflow-y:auto; }
+.squadra-live-card{ border-bottom:1px solid var(--border); padding-bottom:12px; }
+.squadra-live-card:last-child{ border-bottom:none; }
+.squadra-live-head{ display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px; color:var(--text-secondary); }
+.squadra-live-players{ display:flex; flex-wrap:wrap; gap:6px; }
+.mini-player{ font-size:11.5px; background:var(--surface-raised); border:1px solid var(--border); border-radius:6px; padding:4px 8px; display:flex; align-items:center; gap:5px; }
+
+.squadre-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; }
+.squadra-card{ cursor:pointer; }
+.squadra-card:hover{ border-color: var(--text-dim); }
+.squadra-card-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.squadra-card-head h3{ font-family:var(--font-display); font-size:16.5px; font-weight:600; }
+.squadra-card-head .owner{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+.spesa-tot{ text-align:right; }
+.spesa-tot .num{ font-size:19px; color: var(--accent); font-weight:600; }
+.spesa-tot .lbl{ font-size:10.5px; color:var(--text-dim); text-transform:uppercase; }
+.slot-bar-row{ display:flex; align-items:center; gap:8px; font-size:12px; margin-top:8px; }
+.slot-bar-row .role-badge{ width:18px; height:18px; font-size:10px; }
+.slot-bar{ flex:1; height:5px; background:var(--surface-raised); border-radius:3px; overflow:hidden; }
+.slot-bar-fill{ height:100%; }
+.slot-count{ color:var(--text-dim); min-width:34px; text-align:right; }
+.criticita{ margin-top:12px; font-size:11.5px; color:var(--allerta); background:rgba(226,87,76,.08); padding:7px 10px; border-radius:6px; }
+
+.settings-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:18px; }
+.settings-section h3{ font-family:var(--font-display); font-size:14px; font-weight:600; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.settings-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; gap:12px; }
+.settings-row + .settings-row{ border-top:1px solid var(--border); }
+.settings-row .row-label{ font-size:13px; }
+.settings-row .row-note{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+.toggle{ width:38px; height:22px; border-radius:999px; background: var(--surface-raised); border:1px solid var(--border); position:relative; flex:none; cursor:pointer; }
+.toggle::after{ content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background: var(--text-dim); transition:left .12s; }
+.toggle.on{ background: rgba(212,175,55,.25); border-color: var(--accent); }
+.toggle.on::after{ background: var(--accent); left:18px; }
+.settings-form-row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px; }
+
+.criterio-row{ display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+.criterio-row:last-of-type{ border-bottom:none; }
+.criterio-ord{ font-family:var(--font-display); font-weight:600; color:var(--text-dim); width:18px; }
+.criterio-row .input{ flex:1; font-size:12.5px; padding:7px 9px; }
+.criterio-row .input.dir{ flex:none; width:120px; }
+.criterio-updown{ display:flex; flex-direction:column; gap:2px; }
+.criterio-updown button{ background:var(--surface-raised); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; width:24px; height:16px; border-radius:4px; font-size:9px; line-height:1; padding:0; }
+.criterio-updown button:hover{ border-color:var(--accent); color:var(--accent); }
+.criterio-updown button:disabled{ opacity:.3; cursor:not-allowed; }
+
+.albaredo-hero{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+.albaredo-score{ text-align:right; }
+.albaredo-score .num{ font-size:38px; font-weight:700; color:var(--accent); }
+.albaredo-score .lbl{ font-size:11px; text-transform:uppercase; color:var(--text-dim); letter-spacing:.5px; }
+.albaredo-grid{ display:grid; grid-template-columns: 1.3fr .7fr; gap:20px; }
+.formazione-role-group{ margin-bottom:16px; }
+.formazione-role-group h4{ font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.formazione-player-row{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+.formazione-player-row .fv{ font-family:var(--font-display); color: var(--role-c); font-weight:600; }
+.paste-zone{ border:1px dashed var(--border); border-radius: var(--radius-sm); padding:24px; text-align:center; color:var(--text-dim); font-size:12.5px; }
+
+.footer-note{ text-align:center; color:var(--text-dim); font-size:11.5px; padding:20px; border-top:1px solid var(--border); margin-top:8px; }
+
+/* ---- LISTONE (pannello a scomparsa in Asta) ---- */
+.listone-toggle-row{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.listone-drawer{
+  display:none; margin-bottom:20px;
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  overflow:hidden;
+}
+.listone-drawer.open{ display:block; }
+.listone-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 18px; border-bottom:1px solid var(--border); background: var(--surface-raised);
+}
+.listone-head h3{ font-family:var(--font-display); font-size:15px; font-weight:600; }
+.listone-filters{ display:grid; grid-template-columns: repeat(5, 1fr) auto; gap:10px; padding:14px 18px; border-bottom:1px solid var(--border); align-items:end; }
+.listone-filters .input{ font-size:12.5px; padding:8px 10px; }
+.listone-table-wrap{ max-height:460px; overflow-y:auto; }
+table.listone-table{ width:100%; border-collapse: collapse; }
+table.listone-table thead th{
+  position:sticky; top:0; z-index:2; background: var(--surface-raised);
+  text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-dim);
+  font-weight:600; padding:9px 12px; border-bottom:1px solid var(--border); cursor:pointer; user-select:none; white-space:nowrap;
+}
+table.listone-table thead th:hover{ color: var(--text); }
+table.listone-table thead th .arrow{ font-size:9px; margin-left:3px; opacity:.7; }
+table.listone-table tbody td{ padding:9px 12px; border-bottom:1px solid var(--border); font-size:12.5px; vertical-align:top; }
+table.listone-table tbody tr:hover{ background: var(--surface-raised); }
+table.listone-table tbody tr.preso td{ opacity:.5; }
+table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
+.l-preso-info{ font-size:11px; color: var(--accent); white-space:nowrap; }
+.l-nota-cell{ min-width:180px; max-width:260px; }
+.l-nota-text{ color: var(--text-secondary); font-size:12px; cursor:text; display:block; min-height:18px; white-space:pre-wrap; }
+.l-nota-text.vuota{ color: var(--text-dim); font-style:italic; }
+.l-nota-edit{ width:100%; background: var(--surface); border:1px solid var(--accent); border-radius:5px; color:var(--text); font-family:var(--font-body); font-size:12px; padding:6px 8px; resize:vertical; min-height:44px; }
+.l-titolarita{ font-variant-numeric: tabular-nums; }
+.listone-count{ font-size:11.5px; color:var(--text-dim); }
+
+/* ---- BLOC-NOTES generale (fondo pagina Asta) ---- */
+.blocnotes-card{ margin-top:16px; }
+.blocnotes-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.blocnotes-saved{ font-size:11px; color: var(--text-dim); display:flex; align-items:center; gap:5px; opacity:0; transition:opacity .2s; }
+.blocnotes-saved.show{ opacity:1; }
+.blocnotes-saved .dot{ background: var(--role-c); }
+.blocnotes-textarea{
+  width:100%; min-height:120px; resize:vertical;
+  background: var(--surface-raised); border:1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-family: var(--font-body); font-size:13.5px; line-height:1.6; padding:12px 14px;
+}
+.blocnotes-textarea::placeholder{ color: var(--text-dim); }
+
+/* ---- bordi colorati per riquadro (accento tenue diverso per zona) ---- */
+.card.accent-gold{ border-color: rgba(212,175,55,.28); }
+.card.accent-blue{ border-color: rgba(74,144,217,.28); }
+.card.accent-green{ border-color: rgba(61,220,132,.28); }
+.card.accent-orange{ border-color: rgba(240,165,0,.28); }
+.card-header-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+.card-expand{ background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:15px; padding:2px 6px; border-radius:5px; line-height:1; }
+.card-expand:hover{ color: var(--accent); background: var(--surface-raised); }
+
+/* ---- modale riutilizzabile ---- */
+.modal-overlay{
+  position:fixed; inset:0; z-index:200; background: rgba(4,6,9,.72);
+  display:none; align-items:flex-start; justify-content:center; padding:56px 20px; overflow-y:auto;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open{ display:flex; }
+.modal-box{
+  background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+  width:100%; max-width:760px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+  animation: modalIn .16s ease-out;
+}
+@keyframes modalIn{ from{ transform: translateY(-12px); opacity:0; } to{ transform:none; opacity:1; } }
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid var(--border);
+}
+.modal-head h3{ font-family:var(--font-display); font-size:17px; font-weight:600; }
+.modal-close{ background:none; border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; width:30px; height:30px; border-radius:7px; font-size:15px; }
+.modal-close:hover{ border-color: var(--allerta); color: var(--allerta); }
+.modal-body{ padding:20px; }
+
+/* ---- log acquisti ---- */
+.log-row{ display:grid; grid-template-columns: 26px 1fr 1fr 70px auto; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.log-row:last-child{ border-bottom:none; }
+.log-row .log-prezzo{ font-family:var(--font-display); font-weight:600; text-align:right; }
+.log-actions{ display:flex; gap:6px; }
+.log-actions button{ background: var(--surface-raised); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; padding:4px 9px; border-radius:5px; font-size:11.5px; }
+.log-actions button:hover{ border-color: var(--text-dim); color: var(--text); }
+.log-actions button.del:hover{ border-color: var(--allerta); color: var(--allerta); }
+.log-empty{ padding:24px; text-align:center; color:var(--text-dim); font-size:13px; }
+
+/* ---- spesa per ruolo (Squadre e dettaglio) ---- */
+.spesa-ruolo-grid{ display:flex; flex-direction:column; gap:7px; margin-top:12px; }
+.spesa-ruolo-row{ display:flex; align-items:center; gap:8px; font-size:12px; }
+.spesa-ruolo-row .role-badge{ width:18px; height:18px; font-size:10px; }
+.spesa-ruolo-bar{ flex:1; height:6px; background:var(--surface-raised); border-radius:3px; overflow:hidden; }
+.spesa-ruolo-bar-fill{ height:100%; }
+.spesa-ruolo-val{ font-family:var(--font-display); font-variant-numeric:tabular-nums; min-width:74px; text-align:right; color:var(--text-secondary); }
+
+/* ---- dettaglio squadra (modale) ---- */
+.dett-rosa-group{ margin-bottom:16px; }
+.dett-rosa-group h4{ font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-dim); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.dett-player-row{ display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.dett-player-row .sq{ color:var(--text-dim); font-size:11.5px; margin-left:6px; }
+.dett-player-row .prezzo{ font-family:var(--font-display); color:var(--accent); font-weight:600; }
+.dett-summary{ display:flex; justify-content:space-between; padding:12px 0; border-top:1px solid var(--border); margin-top:6px; font-size:14px; }
+.dett-summary b{ font-family:var(--font-display); color:var(--accent); }
+
+/* ---- turno con override ---- */
+.turno-override-btn{ background: var(--surface-raised); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; font-size:11px; padding:5px 10px; border-radius:6px; margin-top:6px; }
+.turno-override-btn:hover{ border-color: var(--accent); color: var(--accent); }
+.turno-banner.override{ border-color: var(--role-d); background: linear-gradient(90deg, rgba(74,144,217,.10), rgba(74,144,217,.02)); }
+.turno-manuale-tag{ font-size:10px; color: var(--role-d); text-transform:uppercase; letter-spacing:.5px; margin-left:8px; }
+
+/* ---- confetti / festa acquisto ---- */
+.festa-overlay{ position:fixed; inset:0; z-index:300; pointer-events:none; display:none; }
+.festa-overlay.on{ display:block; }
+.festa-card{
+  position:absolute; top:34%; left:50%; transform:translate(-50%,-50%) scale(.6);
+  background: linear-gradient(150deg, var(--surface-raised), var(--surface));
+  border:1px solid var(--accent); border-radius:16px; padding:22px 34px; text-align:center;
+  box-shadow: 0 0 0 1px rgba(212,175,55,.2), 0 24px 60px -12px rgba(212,175,55,.4);
+  opacity:0;
+}
+.festa-card.pop{ animation: festaPop 1.9s ease-out forwards; }
+@keyframes festaPop{
+  0%{ opacity:0; transform:translate(-50%,-50%) scale(.6); }
+  12%{ opacity:1; transform:translate(-50%,-50%) scale(1.06); }
+  22%{ transform:translate(-50%,-50%) scale(1); }
+  78%{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  100%{ opacity:0; transform:translate(-50%,-58%) scale(.96); }
+}
+.festa-card .fc-label{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); }
+.festa-card .fc-nome{ font-family:var(--font-display); font-size:26px; font-weight:700; color:var(--accent); margin:4px 0; }
+.festa-card .fc-dett{ font-size:13px; color:var(--text-secondary); }
+.confetto{ position:absolute; width:9px; height:14px; top:-20px; will-change: transform, opacity; }
+
+.toast{
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+  background: var(--surface-raised); border:1px solid var(--border); border-radius: var(--radius-sm);
+  padding:12px 20px; font-size:13px; opacity:0; pointer-events:none; transition: opacity .15s, transform .15s;
+  z-index:100; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.toast.error{ border-color: rgba(226,87,76,.5); color: var(--allerta); }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+
+</style>
+</head>
+<body>
+
+<div class="app-root">
+
+  <input type="radio" name="screen" id="screen-splash" class="screen-radio" checked>
+  <input type="radio" name="screen" id="screen-app" class="screen-radio">
+
+  <section class="splash">
+    <div class="splash-crest">FI</div>
+    <h1 class="splash-title">Fanta<span>Igor</span>2026</h1>
+    <p class="splash-sub">Preparazione asta, tracking live e archivio squadre per la lega a 6 — stagione 2026/27.</p>
+
+    <div class="splash-actions" id="splash-actions">
+      <label for="screen-app" class="btn-enter">Entra</label>
+    </div>
+
+    <div class="splash-status" id="splash-status"></div>
+  </section>
+
+  <div class="shell">
+
+    <input type="radio" name="tab" id="tab-acquistare" class="tab-radio">
+    <input type="radio" name="tab" id="tab-asta" class="tab-radio" checked>
+    <input type="radio" name="tab" id="tab-squadre" class="tab-radio">
+    <input type="radio" name="tab" id="tab-impostazioni" class="tab-radio">
+    <input type="radio" name="tab" id="tab-albaredo" class="tab-radio">
+
+    <header class="shell-header">
+      <div class="brand"><span class="mark">FI</span>FantaIgor<b>2026</b></div>
+      <nav class="tabs">
+        <label for="tab-acquistare">Chi acquistare</label>
+        <label for="tab-asta">Asta</label>
+        <label for="tab-squadre">Squadre</label>
+        <label for="tab-impostazioni">Impostazioni</label>
+        <label for="tab-albaredo">FC Albaredo</label>
+      </nav>
+      <div class="header-status" id="header-status"><span class="dot"></span> —</div>
+    </header>
+
+    <div class="persist-banner" id="persist-banner">
+      <span id="persist-banner-text"></span>
+      <button class="btn btn-sm" id="persist-banner-action"></button>
+    </div>
+
+    <!-- ============ CHI ACQUISTARE ============ -->
+    <section class="panel panel-acquistare">
+      <h2 class="panel-title">Chi acquistare</h2>
+      <p class="panel-sub">Ordinati per convenienza — divario dal sostituto libero, non fantavalore puro. Ricalcolato sui giocatori ancora liberi.</p>
+
+      <div class="role-filter-row" id="acq-role-filter">
+        <label><input type="radio" name="ruolo-acq" value="P" checked><span class="role-badge r-p" style="display:inline-flex;margin-right:6px;vertical-align:middle">P</span>Portieri</label>
+        <label><input type="radio" name="ruolo-acq" value="D"><span class="role-badge r-d" style="display:inline-flex;margin-right:6px;vertical-align:middle">D</span>Difensori</label>
+        <label><input type="radio" name="ruolo-acq" value="C"><span class="role-badge r-c" style="display:inline-flex;margin-right:6px;vertical-align:middle">C</span>Centrocampisti</label>
+        <label><input type="radio" name="ruolo-acq" value="A"><span class="role-badge r-a" style="display:inline-flex;margin-right:6px;vertical-align:middle">A</span>Attaccanti</label>
+      </div>
+
+      <div class="filters-bar">
+        <div><span class="field-label">Squadra reale</span><select class="input" id="acq-filtro-squadra"><option value="">Tutte</option></select></div>
+        <div><span class="field-label">Fascia prezzo (base)</span>
+          <select class="input" id="acq-filtro-prezzo">
+            <option value="">Tutte</option>
+            <option value="0-10">0–10</option>
+            <option value="10-25">10–25</option>
+            <option value="25-999">25+</option>
+          </select>
+        </div>
+        <div><span class="field-label">Presenze minime</span>
+          <select class="input" id="acq-filtro-presenze">
+            <option value="0">Nessun minimo</option>
+            <option value="25">25+</option>
+            <option value="30">30+</option>
+          </select>
+        </div>
+      </div>
+
+      <table class="player-table">
+        <thead><tr><th>Giocatore</th><th>Base</th><th>Prezzo atteso</th><th>Convenienza</th><th>Metriche</th></tr></thead>
+        <tbody id="acq-tbody"></tbody>
+      </table>
+    </section>
+
+    <!-- ============ ASTA ============ -->
+    <section class="panel panel-asta">
+      <h2 class="panel-title">Asta</h2>
+      <p class="panel-sub">Tracciamento live — l'asta reale si svolge sull'app Leghe Fantacalcio.</p>
+
+      <div class="turno-banner" id="turno-banner">
+        <div>
+          <div class="turno-label">Turno di chiamata</div>
+          <div class="turno-value" id="turno-squadra">—</div>
+          <button class="turno-override-btn" id="turno-override-btn">Forza turno a mano</button>
+        </div>
+        <div class="turno-ruolo">
+          <div style="text-align:right">
+            <div class="turno-label">Ruolo in corso</div>
+            <div class="turno-value" id="turno-ruolo-testo" style="font-size:16px">—</div>
+          </div>
+          <span class="role-badge" id="turno-ruolo-badge">—</span>
+        </div>
+      </div>
+
+      <div class="listone-toggle-row">
+        <button class="btn" id="btn-toggle-listone">Mostra listone</button>
+        <span class="listone-count" id="listone-count"></span>
+      </div>
+
+      <div class="listone-drawer" id="listone-drawer">
+        <div class="listone-head">
+          <h3>Listone completo</h3>
+          <span class="listone-count" id="listone-count-drawer"></span>
+        </div>
+        <div class="listone-filters">
+          <div>
+            <span class="field-label">Cerca nome</span>
+            <input class="input" id="lst-cerca" placeholder="nome…" autocomplete="off">
+          </div>
+          <div>
+            <span class="field-label">Ruolo</span>
+            <select class="input" id="lst-ruolo"><option value="">Tutti</option><option value="P">P</option><option value="D">D</option><option value="C">C</option><option value="A">A</option></select>
+          </div>
+          <div>
+            <span class="field-label">Squadra</span>
+            <select class="input" id="lst-squadra"><option value="">Tutte</option></select>
+          </div>
+          <div>
+            <span class="field-label">Stato</span>
+            <select class="input" id="lst-stato"><option value="">Tutti</option><option value="libero">Solo liberi</option><option value="preso">Solo presi</option></select>
+          </div>
+          <div>
+            <span class="field-label">Solo con note</span>
+            <select class="input" id="lst-note"><option value="">No</option><option value="si">Sì</option></select>
+          </div>
+          <div>
+            <button class="btn btn-sm" id="lst-reset-filtri">Azzera filtri</button>
+          </div>
+        </div>
+        <div class="listone-table-wrap">
+          <table class="listone-table">
+            <thead>
+              <tr id="lst-header">
+                <th data-sort="ruolo">Ruolo<span class="arrow"></span></th>
+                <th data-sort="nome">Nome<span class="arrow"></span></th>
+                <th data-sort="squadra">Squadra<span class="arrow"></span></th>
+                <th data-sort="base">Base<span class="arrow"></span></th>
+                <th data-sort="fm">Fantamedia<span class="arrow"></span></th>
+                <th data-sort="titolarita">Titolarità<span class="arrow"></span></th>
+                <th data-sort="nota">Note<span class="arrow"></span></th>
+              </tr>
+            </thead>
+            <tbody id="lst-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="asta-grid">
+
+        <div class="asta-col">
+          <div class="card">
+            <span class="field-label">Cerca giocatore</span>
+            <div class="autocomplete-wrap">
+              <input class="input" id="ricerca-input" placeholder="Digita almeno 3 lettere…" autocomplete="off">
+              <div class="autocomplete-list" id="autocomplete-list"></div>
+            </div>
+            <div class="selected-player-chip" id="selected-chip">
+              <span id="selected-chip-text"></span>
+              <span class="rm" id="selected-chip-rm">rimuovi ✕</span>
+            </div>
+
+            <div class="assign-row">
+              <div><span class="field-label">Assegna a</span><select class="input" id="assign-partecipante"></select></div>
+              <div><span class="field-label">Prezzo</span><input class="input" id="assign-prezzo" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="field-error" id="assign-error"></div>
+            <div class="sforamento-note" id="sforamento-note"></div>
+            <div class="assign-actions">
+              <button class="btn btn-primary" id="btn-conferma">Conferma acquisto</button>
+              <button class="btn" id="btn-annulla">Annulla ultimo</button>
+            </div>
+          </div>
+
+          <div class="card accent-green">
+            <span class="field-label">Suggerimenti per il tuo turno</span>
+            <p style="font-size:11.5px;color:var(--text-dim);margin-top:2px;">I migliori liberi per il ruolo in corso</p>
+            <div class="suggerimenti-list" id="suggerimenti-list"></div>
+          </div>
+
+          <div class="card accent-orange">
+            <span class="field-label">Analisi comportamento avversari</span>
+            <div id="analisi-avversari" style="font-size:12.5px; color:var(--text-secondary); margin-top:8px; display:flex; flex-direction:column; gap:6px;"></div>
+          </div>
+        </div>
+
+        <div class="asta-col">
+          <div class="card accent-gold">
+            <span class="field-label">Crediti e slot <span style="text-transform:none;font-weight:400;color:var(--text-dim);">— click sul valore per correggerlo a mano</span></span>
+            <div id="partecipanti-list" style="margin-top:8px;"></div>
+          </div>
+
+          <div class="card accent-blue">
+            <div class="card-header-row">
+              <span class="field-label" style="margin-bottom:0;">Squadre in formazione</span>
+              <button class="card-expand" id="btn-log-acquisti" title="Apri il log completo degli acquisti">⛶</button>
+            </div>
+            <div class="squadre-live" id="squadre-live" style="margin-top:10px;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card blocnotes-card">
+        <div class="blocnotes-head">
+          <span class="field-label" style="margin-bottom:0;">Bloc-notes asta</span>
+          <span class="blocnotes-saved" id="blocnotes-saved"><span class="dot"></span> salvato</span>
+        </div>
+        <textarea class="blocnotes-textarea" id="blocnotes" placeholder="Appunti liberi: strategie, promemoria, conti al volo… Si salva da solo mentre scrivi."></textarea>
+      </div>
+    </section>
+
+    <!-- ============ SQUADRE ============ -->
+    <section class="panel panel-squadre">
+      <h2 class="panel-title">Squadre</h2>
+      <p class="panel-sub">Archivio delle rose — aggiornato in tempo reale con gli acquisti registrati in Asta.</p>
+      <div class="squadre-grid" id="squadre-grid"></div>
+    </section>
+
+    <!-- ============ IMPOSTAZIONI ============ -->
+    <section class="panel panel-impostazioni">
+      <h2 class="panel-title">Impostazioni</h2>
+      <p class="panel-sub">Parametri di lega, backup e audio.</p>
+
+      <div class="settings-grid">
+        <div class="card settings-section">
+          <h3>Audio</h3>
+          <div class="settings-row"><div><div class="row-label">Muto</div></div><div class="toggle" id="toggle-muto"></div></div>
+          <div class="settings-row"><div><div class="row-label">Volume</div><div class="row-note" id="volume-note">60%</div></div><input type="range" id="volume-range" style="width:120px" value="60"></div>
+        </div>
+
+        <div class="card settings-section">
+          <h3>Backup</h3>
+          <div class="settings-row"><div><div class="row-label">File di destinazione</div><div class="row-note" id="backup-file-note">Nessun file scelto</div></div><button class="btn" id="btn-scegli-file">Scegli file</button></div>
+          <div class="settings-row"><div><div class="row-label">Backup manuale</div><div class="row-note" id="ultimo-backup-note">Mai eseguito</div></div><button class="btn btn-primary" id="btn-esporta-ora">Esporta ora</button></div>
+          <div class="settings-row"><div><div class="row-label">Ripristina da file</div><div class="row-note">Sovrascrive lo stato attuale, chiede conferma</div></div><button class="btn" id="btn-importa">Importa backup</button></div>
+        </div>
+
+        <div class="card settings-section">
+          <h3>Catalogo giocatori</h3>
+          <div class="settings-row"><div><div class="row-label">Catalogo attuale</div><div class="row-note" id="catalogo-info">—</div></div><button class="btn" disabled>Importa nuovo listone</button></div>
+        </div>
+
+        <div class="card settings-section">
+          <h3>Parametri di lega</h3>
+          <div class="settings-form-row"><div><span class="field-label">Partecipanti</span><input class="input" value="6" disabled></div><div><span class="field-label">Crediti iniziali</span><input class="input" id="param-crediti-iniziali" value="700" inputmode="numeric"></div></div>
+          <div class="settings-form-row"><div><span class="field-label">Slot P</span><input class="input" value="3" disabled></div><div><span class="field-label">Slot D</span><input class="input" value="8" disabled></div></div>
+          <div class="settings-form-row"><div><span class="field-label">Slot C</span><input class="input" value="8" disabled></div><div><span class="field-label">Slot A</span><input class="input" value="6" disabled></div></div>
+        </div>
+
+        <div class="card settings-section">
+          <h3>Algoritmo suggerimenti</h3>
+          <div class="settings-form-row">
+            <div><span class="field-label">Moltiplicatore prezzo</span><input class="input" id="param-moltiplicatore" value="1.9"></div>
+            <div><span class="field-label">Sconto crediti risparmiati</span><input class="input" value="0.15" disabled></div>
+          </div>
+        </div>
+
+        <div class="card settings-section">
+          <h3>Ordine del turno di chiamata</h3>
+          <p style="font-size:11.5px;color:var(--text-dim);margin-bottom:12px;">Definisci con quali criteri, e in che ordine, si stabilisce chi chiama il prossimo giocatore. Il primo criterio è quello prioritario.</p>
+          <div id="criteri-turno-list"></div>
+          <button class="btn btn-sm" id="btn-reset-criteri" style="margin-top:8px;">Ripristina regola standard</button>
+        </div>
+
+        <div class="card settings-section" style="border-color: rgba(226,87,76,.3);">
+          <h3 style="color:var(--allerta)">Zona pericolosa</h3>
+          <div class="settings-row"><div><div class="row-label">Reset asta</div><div class="row-note">Richiede doppia conferma</div></div><button class="btn btn-danger" id="btn-reset">Reset</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FC ALBAREDO ============ -->
+    <section class="panel panel-albaredo">
+      <h2 class="panel-title">FC Albaredo</h2>
+      <p class="panel-sub">La squadra di Igor — aggiornamento manuale dai dati di Leghe Fantacalcio (arriva in Fase 6).</p>
+
+      <div class="albaredo-hero">
+        <div>
+          <div class="turno-label">Rosa attuale — asta in corso</div>
+          <div class="turno-value" id="albaredo-stato" style="font-size:18px;margin-top:4px;">—</div>
+        </div>
+        <div class="albaredo-score">
+          <div class="num" id="albaredo-spesa">0</div>
+          <div class="lbl">crediti spesi</div>
+        </div>
+      </div>
+
+      <div class="albaredo-grid">
+        <div class="card">
+          <span class="field-label">Rosa FC Albaredo</span>
+          <div id="albaredo-rosa" style="margin-top:10px;"></div>
+        </div>
+        <div class="card">
+          <span class="field-label">Aggiorna dati settimanali</span>
+          <p style="font-size:11.5px;color:var(--text-dim);margin:6px 0 12px;">Disponibile dopo l'inizio del campionato — Fase 6.</p>
+          <div class="paste-zone">Incolla qui i dati della giornata<br>oppure trascina un file</div>
+          <button class="btn" style="width:100%;margin-top:12px;" disabled>Elabora aggiornamento</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-note">FantaIgor2026 — dati salvati in locale (IndexedDB) + backup su file. Chrome/Edge desktop.</div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-title">—</h3>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="festa-overlay" id="festa-overlay">
+  <div class="festa-card" id="festa-card">
+    <div class="fc-label">Preso!</div>
+    <div class="fc-nome" id="festa-nome">—</div>
+    <div class="fc-dett" id="festa-dett">—</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   FANTAIGOR2026 — FASE 4: persistenza
+   - IndexedDB: stato caldo, scritto dopo OGNI operazione
+   - File System Access API: backup ogni 30s, stesso file
+     sovrascritto (handle persistito in IndexedDB)
+   Nessun blocco duro sugli inserimenti (§9.2): solo avvisi.
+   ============================================================ */
+
+/* ---------------------------------------------------------
+   1. CATALOGO DI TEST (invariato dalla Fase 3)
+--------------------------------------------------------- */
+const CATALOGO_TEST = [
+  {id:1,nome:"Falcone",squadra:"Lecce",ruolo:"P",qt_i:6,qt_a:11,fvm:14,pv:34,mv:6.41,fm:5.9,sd:.5,p6:82,p65:38,p7:9,mv_h1:6.4,mv_h2:6.42},
+  {id:2,nome:"Caprile",squadra:"Cagliari",ruolo:"P",qt_i:7,qt_a:13,fvm:16,pv:31,mv:6.29,fm:5.85,sd:.48,p6:78,p65:30,p7:6,mv_h1:6.3,mv_h2:6.28},
+  {id:3,nome:"Carnesecchi",squadra:"Atalanta",ruolo:"P",qt_i:14,qt_a:18,fvm:28,pv:33,mv:6.36,fm:6.0,sd:.44,p6:85,p65:35,p7:9,mv_h1:6.35,mv_h2:6.37},
+  {id:4,nome:"Svilar",squadra:"Roma",ruolo:"P",qt_i:15,qt_a:20,fvm:30,pv:28,mv:6.26,fm:5.95,sd:.5,p6:75,p65:29,p7:7,mv_h1:6.2,mv_h2:6.31},
+  {id:5,nome:"Di Gregorio",squadra:"Juventus",ruolo:"P",qt_i:16,qt_a:19,fvm:26,pv:30,mv:6.08,fm:5.7,sd:.55,p6:65,p65:20,p7:5,mv_h1:6.1,mv_h2:6.06},
+  {id:6,nome:"Maignan",squadra:"Milan",ruolo:"P",qt_i:16,qt_a:22,fvm:35,pv:29,mv:6.26,fm:6.05,sd:.47,p6:79,p65:32,p7:8,mv_h1:6.25,mv_h2:6.27},
+  {id:7,nome:"Meret",squadra:"Napoli",ruolo:"P",qt_i:12,qt_a:15,fvm:20,pv:27,mv:6.10,fm:5.8,sd:.5,p6:70,p65:24,p7:5,mv_h1:6.05,mv_h2:6.15},
+  {id:8,nome:"Provedel",squadra:"Lazio",ruolo:"P",qt_i:11,qt_a:14,fvm:19,pv:26,mv:6.05,fm:5.75,sd:.5,p6:66,p65:21,p7:4,mv_h1:6.0,mv_h2:6.1},
+  {id:9,nome:"Skorupski",squadra:"Bologna",ruolo:"P",qt_i:9,qt_a:12,fvm:17,pv:19,mv:6.16,fm:5.6,sd:.46,p6:79,p65:31,p7:9,mv_h1:6.15,mv_h2:6.17},
+  {id:10,nome:"Sommer",squadra:"Inter",ruolo:"P",qt_i:13,qt_a:17,fvm:25,pv:25,mv:6.18,fm:5.9,sd:.5,p6:74,p65:28,p7:6,mv_h1:6.15,mv_h2:6.2},
+  {id:11,nome:"Montipò",squadra:"Verona",ruolo:"P",qt_i:5,qt_a:7,fvm:9,pv:20,mv:5.95,fm:5.4,sd:.55,p6:55,p65:15,p7:2,mv_h1:5.9,mv_h2:6.0},
+  {id:12,nome:"Turati",squadra:"Sassuolo",ruolo:"P",qt_i:4,qt_a:6,fvm:8,pv:18,mv:5.85,fm:5.3,sd:.6,p6:50,p65:12,p7:2,mv_h1:5.8,mv_h2:5.9},
+  {id:13,nome:"Suzuki",squadra:"Parma",ruolo:"P",qt_i:3,qt_a:5,fvm:7,pv:22,mv:5.9,fm:5.35,sd:.55,p6:52,p65:14,p7:3,mv_h1:5.85,mv_h2:5.95},
+  {id:14,nome:"Perin",squadra:"Juventus",ruolo:"P",qt_i:2,qt_a:3,fvm:5,pv:9,mv:6.11,fm:5.1,sd:.31,p6:89,p65:33,p7:0,mv_h1:6.0,mv_h2:6.14},
+  {id:15,nome:"Israel",squadra:"Torino",ruolo:"P",qt_i:4,qt_a:5,fvm:6,pv:24,mv:5.8,fm:5.2,sd:.6,p6:45,p65:10,p7:1,mv_h1:5.75,mv_h2:5.85},
+  {id:20,nome:"Dimarco",squadra:"Inter",ruolo:"D",qt_i:19,qt_a:30,fvm:320,pv:35,mv:6.60,fm:7.64,sd:.73,p6:89,p65:71,p7:40,mv_h1:6.62,mv_h2:6.58,titolarita:92,note_default:"Titolare fisso, rigorista. Esempio di nota precaricata."},
+  {id:21,nome:"Bremer",squadra:"Juventus",ruolo:"D",qt_i:13,qt_a:18,fvm:74,pv:30,mv:6.33,fm:6.4,sd:.5,p6:80,p65:45,p7:15,mv_h1:6.3,mv_h2:6.35},
+  {id:22,nome:"Akanji",squadra:"Inter",ruolo:"D",qt_i:9,qt_a:12,fvm:64,pv:28,mv:6.28,fm:6.2,sd:.48,p6:76,p65:40,p7:12,mv_h1:6.25,mv_h2:6.3},
+  {id:23,nome:"Palestra",squadra:"Cagliari",ruolo:"D",qt_i:3,qt_a:5,fvm:75,pv:33,mv:6.27,fm:6.5,sd:.4,p6:78,p65:42,p7:10,mv_h1:6.25,mv_h2:6.29},
+  {id:24,nome:"Mancini",squadra:"Roma",ruolo:"D",qt_i:11,qt_a:15,fvm:54,pv:31,mv:6.25,fm:6.15,sd:.45,p6:77,p65:38,p7:11,mv_h1:6.22,mv_h2:6.28},
+  {id:25,nome:"Pavlovic",squadra:"Milan",ruolo:"D",qt_i:7,qt_a:10,fvm:60,pv:29,mv:6.24,fm:6.1,sd:.5,p6:72,p65:36,p7:12,mv_h1:6.2,mv_h2:6.28},
+  {id:26,nome:"Celik",squadra:"Roma",ruolo:"D",qt_i:7,qt_a:8,fvm:14,pv:32,mv:6.17,fm:5.9,sd:.42,p6:75,p65:33,p7:7,mv_h1:6.15,mv_h2:6.19},
+  {id:27,nome:"Hermoso",squadra:"Roma",ruolo:"D",qt_i:3,qt_a:5,fvm:25,pv:27,mv:6.17,fm:6.05,sd:.44,p6:73,p65:32,p7:8,mv_h1:6.15,mv_h2:6.2},
+  {id:28,nome:"Luperto",squadra:"Cremonese",ruolo:"D",qt_i:7,qt_a:9,fvm:12,pv:34,mv:5.84,fm:5.6,sd:.5,p6:50,p65:20,p7:3,mv_h1:5.83,mv_h2:5.85},
+  {id:29,nome:"Romagnoli",squadra:"Lazio",ruolo:"D",qt_i:9,qt_a:12,fvm:20,pv:32,mv:6.03,fm:5.85,sd:.42,p6:75,p65:30,p7:4,mv_h1:6.0,mv_h2:6.06},
+  {id:30,nome:"De Vrij",squadra:"Inter",ruolo:"D",qt_i:6,qt_a:8,fvm:15,pv:11,mv:5.95,fm:5.7,sd:.4,p6:64,p65:27,p7:0,mv_h1:5.9,mv_h2:6.0},
+  {id:31,nome:"Gatti",squadra:"Juventus",ruolo:"D",qt_i:8,qt_a:11,fvm:16,pv:30,mv:5.98,fm:5.75,sd:.45,p6:66,p65:26,p7:5,mv_h1:5.95,mv_h2:6.0},
+  {id:32,nome:"Bastoni",squadra:"Inter",ruolo:"D",qt_i:16,qt_a:22,fvm:45,pv:33,mv:6.15,fm:6.1,sd:.4,p6:78,p65:35,p7:6,mv_h1:6.12,mv_h2:6.18},
+  {id:33,nome:"Ranieri",squadra:"Fiorentina",ruolo:"D",qt_i:5,qt_a:7,fvm:10,pv:29,mv:5.9,fm:5.6,sd:.45,p6:60,p65:22,p7:2,mv_h1:5.88,mv_h2:5.92},
+  {id:34,nome:"Kalulu",squadra:"Juventus",ruolo:"D",qt_i:6,qt_a:8,fvm:13,pv:26,mv:5.95,fm:5.7,sd:.42,p6:63,p65:24,p7:3,mv_h1:5.93,mv_h2:5.97},
+  {id:35,nome:"Angelino",squadra:"Roma",ruolo:"D",qt_i:15,qt_a:19,fvm:38,pv:28,mv:6.05,fm:6.2,sd:.5,p6:70,p65:33,p7:9,mv_h1:6.0,mv_h2:6.1},
+  {id:36,nome:"N'Dicka",squadra:"Roma",ruolo:"D",qt_i:10,qt_a:13,fvm:19,pv:24,mv:6.02,fm:5.8,sd:.42,p6:68,p65:28,p7:4,mv_h1:6.0,mv_h2:6.04},
+  {id:37,nome:"Gosens",squadra:"Fiorentina",ruolo:"D",qt_i:7,qt_a:9,fvm:22,pv:25,mv:6.0,fm:6.0,sd:.48,p6:66,p65:29,p7:6,mv_h1:5.98,mv_h2:6.02},
+  {id:38,nome:"Zappa",squadra:"Cagliari",ruolo:"D",qt_i:6,qt_a:8,fvm:11,pv:31,mv:5.88,fm:5.6,sd:.4,p6:58,p65:19,p7:2,mv_h1:5.86,mv_h2:5.9},
+  {id:39,nome:"Obert",squadra:"Cagliari",ruolo:"D",qt_i:4,qt_a:6,fvm:9,pv:22,mv:5.85,fm:5.55,sd:.45,p6:55,p65:17,p7:2,mv_h1:5.83,mv_h2:5.87},
+  {id:50,nome:"Yildiz",squadra:"Juventus",ruolo:"C",qt_i:35,qt_a:55,fvm:182,pv:33,mv:6.6,fm:7.9,sd:.7,p6:85,p65:55,p7:22,mv_h1:6.55,mv_h2:6.65},
+  {id:51,nome:"De Bruyne",squadra:"Napoli",ruolo:"C",qt_i:28,qt_a:40,fvm:150,pv:30,mv:6.55,fm:7.6,sd:.65,p6:82,p65:50,p7:20,mv_h1:6.5,mv_h2:6.6},
+  {id:52,nome:"Zielinski",squadra:"Inter",ruolo:"C",qt_i:14,qt_a:20,fvm:60,pv:34,mv:6.16,fm:6.5,sd:.6,p6:68,p65:47,p7:18,mv_h1:6.09,mv_h2:6.22},
+  {id:53,nome:"Barella",squadra:"Inter",ruolo:"C",qt_i:18,qt_a:24,fvm:70,pv:33,mv:6.2,fm:6.6,sd:.55,p6:74,p65:44,p7:14,mv_h1:6.18,mv_h2:6.22},
+  {id:54,nome:"Koopmeiners",squadra:"Juventus",ruolo:"C",qt_i:22,qt_a:30,fvm:85,pv:29,mv:6.25,fm:6.7,sd:.6,p6:76,p65:46,p7:16,mv_h1:6.2,mv_h2:6.3},
+  {id:55,nome:"Fabbian",squadra:"Bologna",ruolo:"C",qt_i:6,qt_a:9,fvm:18,pv:27,mv:6.0,fm:5.9,sd:.5,p6:60,p65:25,p7:6,mv_h1:5.98,mv_h2:6.02},
+  {id:56,nome:"Lobotka",squadra:"Napoli",ruolo:"C",qt_i:12,qt_a:16,fvm:35,pv:31,mv:6.1,fm:6.0,sd:.4,p6:70,p65:28,p7:5,mv_h1:6.08,mv_h2:6.12},
+  {id:57,nome:"Rovella",squadra:"Lazio",ruolo:"C",qt_i:8,qt_a:11,fvm:20,pv:26,mv:6.05,fm:5.85,sd:.42,p6:64,p65:25,p7:4,mv_h1:6.02,mv_h2:6.08},
+  {id:58,nome:"Fagioli",squadra:"Fiorentina",ruolo:"C",qt_i:7,qt_a:10,fvm:17,pv:24,mv:5.98,fm:5.8,sd:.44,p6:60,p65:22,p7:3,mv_h1:5.95,mv_h2:6.0},
+  {id:59,nome:"Berardi",squadra:"Sassuolo",ruolo:"C",qt_i:16,qt_a:22,fvm:55,pv:28,mv:6.15,fm:6.4,sd:.55,p6:72,p65:40,p7:12,mv_h1:6.1,mv_h2:6.2},
+  {id:60,nome:"Modric",squadra:"Milan",ruolo:"C",qt_i:13,qt_a:17,fvm:40,pv:25,mv:6.2,fm:6.3,sd:.5,p6:75,p65:38,p7:10,mv_h1:6.15,mv_h2:6.25},
+  {id:61,nome:"Anguissa",squadra:"Napoli",ruolo:"C",qt_i:10,qt_a:14,fvm:28,pv:29,mv:6.08,fm:6.05,sd:.45,p6:66,p65:29,p7:6,mv_h1:6.05,mv_h2:6.1},
+  {id:62,nome:"Cristante",squadra:"Roma",ruolo:"C",qt_i:6,qt_a:8,fvm:14,pv:27,mv:5.95,fm:5.7,sd:.4,p6:58,p65:20,p7:2,mv_h1:5.93,mv_h2:5.97},
+  {id:63,nome:"Locatelli",squadra:"Juventus",ruolo:"C",qt_i:9,qt_a:12,fvm:22,pv:28,mv:6.02,fm:5.9,sd:.4,p6:65,p65:24,p7:3,mv_h1:6.0,mv_h2:6.04},
+  {id:64,nome:"Pulisic",squadra:"Milan",ruolo:"C",qt_i:24,qt_a:32,fvm:95,pv:27,mv:6.3,fm:6.9,sd:.6,p6:78,p65:48,p7:16,mv_h1:6.25,mv_h2:6.35},
+  {id:70,nome:"Thuram",squadra:"Inter",ruolo:"A",qt_i:26,qt_a:38,fvm:200,pv:32,mv:6.4,fm:8.1,sd:.65,p6:80,p65:55,p7:24,mv_h1:6.35,mv_h2:6.45,titolarita:88},
+  {id:71,nome:"Vlahovic",squadra:"Juventus",ruolo:"A",qt_i:22,qt_a:30,fvm:110,pv:29,mv:6.2,fm:7.1,sd:.7,p6:70,p65:42,p7:18,mv_h1:6.15,mv_h2:6.25},
+  {id:72,nome:"Lukaku",squadra:"Napoli",ruolo:"A",qt_i:20,qt_a:28,fvm:99,pv:28,mv:6.15,fm:6.9,sd:.65,p6:68,p65:38,p7:15,mv_h1:6.1,mv_h2:6.2},
+  {id:73,nome:"Dovbyk",squadra:"Roma",ruolo:"A",qt_i:18,qt_a:24,fvm:82,pv:27,mv:6.1,fm:6.7,sd:.6,p6:65,p65:35,p7:13,mv_h1:6.05,mv_h2:6.15},
+  {id:74,nome:"Kean",squadra:"Fiorentina",ruolo:"A",qt_i:19,qt_a:26,fvm:90,pv:30,mv:6.18,fm:6.85,sd:.62,p6:70,p65:39,p7:16,mv_h1:6.12,mv_h2:6.24},
+  {id:75,nome:"Retegui",squadra:"Atalanta",ruolo:"A",qt_i:14,qt_a:20,fvm:67,pv:31,mv:6.05,fm:6.5,sd:.55,p6:62,p65:32,p7:11,mv_h1:6.0,mv_h2:6.1},
+  {id:76,nome:"Pinamonti",squadra:"Sassuolo",ruolo:"A",qt_i:8,qt_a:11,fvm:22,pv:26,mv:5.9,fm:5.9,sd:.5,p6:52,p65:20,p7:6,mv_h1:5.88,mv_h2:5.92},
+  {id:77,nome:"Krstovic",squadra:"Atalanta",ruolo:"A",qt_i:6,qt_a:8,fvm:15,pv:22,mv:5.85,fm:5.7,sd:.5,p6:48,p65:16,p7:4,mv_h1:5.83,mv_h2:5.87},
+  {id:78,nome:"Castro",squadra:"Bologna",ruolo:"A",qt_i:5,qt_a:7,fvm:12,pv:24,mv:5.8,fm:5.6,sd:.5,p6:45,p65:14,p7:3,mv_h1:5.78,mv_h2:5.82},
+  {id:79,nome:"Scamacca",squadra:"Atalanta",ruolo:"A",qt_i:12,qt_a:16,fvm:40,pv:20,mv:5.95,fm:6.2,sd:.55,p6:55,p65:25,p7:8,mv_h1:5.9,mv_h2:6.0},
+  {id:80,nome:"Immobile",squadra:"Bologna",ruolo:"A",qt_i:9,qt_a:12,fvm:33,pv:23,mv:5.9,fm:6.1,sd:.55,p6:52,p65:23,p7:7,mv_h1:5.85,mv_h2:5.95},
+  {id:81,nome:"Kuhn",squadra:"Como",ruolo:"A",qt_i:4,qt_a:6,fvm:10,pv:21,mv:5.75,fm:5.5,sd:.5,p6:40,p65:12,p7:2,mv_h1:5.73,mv_h2:5.77},
+  {id:82,nome:"Douvikas",squadra:"Como",ruolo:"A",qt_i:8,qt_a:26,fvm:37,pv:19,mv:5.95,fm:6.05,sd:.55,p6:53,p65:24,p7:8,mv_h1:5.9,mv_h2:6.0},
+  {id:83,nome:"Morata",squadra:"Como",ruolo:"A",qt_i:13,qt_a:17,fvm:43,pv:22,mv:5.98,fm:6.15,sd:.55,p6:56,p65:26,p7:9,mv_h1:5.95,mv_h2:6.0},
+  {id:84,nome:"Colombo",squadra:"Genoa",ruolo:"A",qt_i:5,qt_a:7,fvm:11,pv:20,mv:5.78,fm:5.55,sd:.5,p6:42,p65:13,p7:2,mv_h1:5.76,mv_h2:5.8},
+];
+
+/* ---------------------------------------------------------
+   2. APPSTATE
+--------------------------------------------------------- */
+const SLOT_PER_RUOLO = { P:3, D:8, C:8, A:6 };
+const ORDINE_RUOLI = ["P","D","C","A"];
+const NOMI_RUOLI = { P:"Portieri", D:"Difensori", C:"Centrocampisti", A:"Attaccanti" };
+
+function partecipantiDefault() {
+  return [
+    { id:"p_soreta",   nome_squadra:"AS Soreta",    proprietari:["Maria Cristina"], is_utente:false, crediti_iniziali:700, correzioneCrediti:null },
+    { id:"p_albaredo", nome_squadra:"FC Albaredo",  proprietari:["Igor"],           is_utente:true,  crediti_iniziali:700, correzioneCrediti:null },
+    { id:"p_pampers",  nome_squadra:"I pampers",    proprietari:["Giuseppe Bentivegna","Davide"], is_utente:false, crediti_iniziali:700, correzioneCrediti:null },
+    { id:"p_materasso",nome_squadra:"Materasso FC", proprietari:["Emanuele"],       is_utente:false, crediti_iniziali:700, correzioneCrediti:null },
+    { id:"p_scarsoni", nome_squadra:"SCarsoni",     proprietari:["Peppe B."],       is_utente:false, crediti_iniziali:700, correzioneCrediti:null },
+    { id:"p_stella",   nome_squadra:"Stella Rossa", proprietari:["Ivan"],           is_utente:false, crediti_iniziali:700, correzioneCrediti:null },
+  ];
+}
+
+const AppState = {
+  catalogo: CATALOGO_TEST,
+  sessioneAttiva: { id:"sess_2026_08", tipo:"agosto", colonna_base:"qt_i" },
+  partecipanti: partecipantiDefault(),
+  acquisti: [],
+  // Note per-giocatore: { [giocatore_id]: "testo" }. Legate all'Id, non alla
+  // posizione nel listone, così sopravvivono al reimport del listone (§7 richiesta Igor).
+  noteGiocatori: {},
+  // Bloc-notes generale dell'asta, testo libero unico.
+  blocnotes: "",
+  impostazioni: {
+    volume: 0.6,
+    muto: false,
+    moltiplicatorePrezzo: 1.9,
+    scontoRisparmio: 0.15,
+    // Ordine dei criteri per il turno di chiamata. Ogni voce: { campo, dir }.
+    // campo: "giocatori" | "crediti" | "alfabetico". dir: "asc" | "desc".
+    // Default = regola confermata da Igor: meno giocatori, poi più crediti, poi alfabetico.
+    criteriTurno: [
+      { campo: "giocatori", dir: "asc" },
+      { campo: "crediti", dir: "desc" },
+      { campo: "alfabetico", dir: "asc" }
+    ]
+  },
+  ui: {
+    ricercaTesto: "",
+    giocatoreSelezionatoId: null,
+    filtroRuoloAcquistare: "P",
+    // stato del listone (solo UI, non persistito)
+    listoneAperto: false,
+    listoneSort: { campo: "ruolo", dir: 1 },
+    listoneFiltri: { cerca: "", ruolo: "", squadra: "", stato: "", soloNote: "" },
+    notaInModifica: null,
+    // Override manuale del turno: id partecipante forzato, oppure null = calcolo automatico
+    turnoOverride: null
+  }
+};
+
+/* Il catalogo reale (Fase 1) porterà i campi titolarita e note_default dal
+   file che caricherà Igor. Il catalogo di test non li ha: le funzioni sotto
+   trattano l'assenza come "—", così quando arriveranno i dati entreranno
+   senza modifiche al codice. */
+function titolaritaDi(g) {
+  return (g.titolarita != null && g.titolarita !== "") ? g.titolarita : null;
+}
+/** Nota effettiva di un giocatore: quella scritta da Igor ha priorità sulla
+    nota_default che potrà arrivare col catalogo (es. da ricerca notizie). */
+function notaDi(id) {
+  if (AppState.noteGiocatori[id] != null) return AppState.noteGiocatori[id];
+  const g = AppState.catalogo.find(x => x.id === id);
+  return (g && g.note_default) ? g.note_default : "";
+}
+function salvaNotaGiocatore(id, testo) {
+  if (testo == null || testo.trim() === "") delete AppState.noteGiocatori[id];
+  else AppState.noteGiocatori[id] = testo;
+  Storage.salvaStatoCaldo();
+}
+
+/* ---------------------------------------------------------
+   3. STORAGE — persistenza (Fase 4)
+   Oggetto separato da AppState, come da template §4 (Fase 4:
+   "oggetto API/Storage separato da AppState").
+--------------------------------------------------------- */
+const DB_NAME = "fantaigor2026";
+const DB_VERSION = 1;
+const STORE = "kv";
+const BACKUP_INTERVAL_MS = 30000;
+const BACKUP_FILENAME = "fantaigor2026_backup.json";
+
+const Storage = {
+  db: null,
+  backupHandle: null,
+  backupTimer: null,
+  indexedDbOk: true,
+  permessoScrittura: "unknown", // granted | prompt | denied | nessun-file
+  ultimoBackup: null,
+
+  async apri() {
+    if (!("indexedDB" in window)) { this.indexedDbOk = false; return null; }
+    try {
+      this.db = await new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      return this.db;
+    } catch (e) {
+      console.error("[Storage] IndexedDB non disponibile", e);
+      this.indexedDbOk = false;
+      return null;
+    }
+  },
+
+  async get(key) {
+    if (!this.db) return undefined;
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(STORE, "readonly");
+      const r = tx.objectStore(STORE).get(key);
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+    });
+  },
+
+  async set(key, value) {
+    if (!this.db) return false;
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(value, key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => reject(tx.error);
+    });
+  },
+
+  /** Istantanea serializzabile — il catalogo NON entra: è bundlato, non stato utente. */
+  snapshot() {
+    return {
+      versione: 1,
+      salvatoIl: new Date().toISOString(),
+      sessioneAttiva: AppState.sessioneAttiva,
+      partecipanti: AppState.partecipanti,
+      acquisti: AppState.acquisti,
+      noteGiocatori: AppState.noteGiocatori,
+      blocnotes: AppState.blocnotes,
+      impostazioni: AppState.impostazioni
+    };
+  },
+
+  /** Scrittura IndexedDB — chiamata dopo OGNI operazione che muta AppState (§4 Fase 4). */
+  async salvaStatoCaldo() {
+    if (!this.indexedDbOk) return;
+    try {
+      await this.set("stato", this.snapshot());
+    } catch (e) {
+      console.error("[Storage] scrittura IndexedDB fallita", e);
+      this.indexedDbOk = false;
+      renderPersistBanner();
+    }
+  },
+
+  applicaSnapshot(snap) {
+    if (!snap) return false;
+    AppState.sessioneAttiva = snap.sessioneAttiva || AppState.sessioneAttiva;
+    AppState.partecipanti = snap.partecipanti || AppState.partecipanti;
+    AppState.acquisti = snap.acquisti || [];
+    AppState.noteGiocatori = snap.noteGiocatori || {};
+    AppState.blocnotes = snap.blocnotes || "";
+    AppState.impostazioni = Object.assign({}, AppState.impostazioni, snap.impostazioni || {});
+    return true;
+  },
+
+  async caricaStatoCaldo() {
+    if (!this.indexedDbOk) return null;
+    try {
+      return await this.get("stato");
+    } catch (e) {
+      console.error("[Storage] lettura IndexedDB fallita", e);
+      this.indexedDbOk = false;
+      return null;
+    }
+  },
+
+  supportata() { return "showSaveFilePicker" in window; },
+
+  async sceglieFile() {
+    if (!this.supportata()) {
+      showToast("Il browser non supporta il salvataggio su file. Serve Chrome o Edge desktop.", true);
+      return false;
+    }
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: BACKUP_FILENAME,
+        types: [{ description: "Backup FantaIgor2026", accept: { "application/json": [".json"] } }]
+      });
+      this.backupHandle = handle;
+      await this.set("backupHandle", handle);
+      this.permessoScrittura = "granted";
+      renderBackupSettings();
+      renderPersistBanner();
+      return true;
+    } catch (e) {
+      if (e.name !== "AbortError") console.error("[Storage] scelta file fallita", e);
+      return false;
+    }
+  },
+
+  /** All'avvio: recupera l'handle salvato e verifica il permesso SENZA chiederlo (query, non request). */
+  async ripristinaHandle() {
+    if (!this.supportata()) { this.permessoScrittura = "non-supportato"; return; }
+    try {
+      const handle = await this.get("backupHandle");
+      if (!handle) { this.permessoScrittura = "nessun-file"; return; }
+      this.backupHandle = handle;
+      this.permessoScrittura = await handle.queryPermission({ mode: "readwrite" });
+    } catch (e) {
+      console.error("[Storage] ripristino handle fallito", e);
+      this.permessoScrittura = "nessun-file";
+    }
+  },
+
+  /** Richiede il permesso — DEVE essere chiamata da un click utente (gesture), non può essere automatica. */
+  async riattivaPermesso() {
+    if (!this.backupHandle) return false;
+    try {
+      const stato = await this.backupHandle.requestPermission({ mode: "readwrite" });
+      this.permessoScrittura = stato;
+      renderPersistBanner();
+      renderBackupSettings();
+      return stato === "granted";
+    } catch (e) {
+      console.error("[Storage] richiesta permesso fallita", e);
+      return false;
+    }
+  },
+
+  async scriviBackup(manuale) {
+    if (!this.backupHandle) {
+      if (manuale) { const scelto = await this.sceglieFile(); if (!scelto) return false; }
+      else return false;
+    }
+    if (this.permessoScrittura !== "granted") {
+      renderPersistBanner();
+      if (manuale) showToast("Permesso di scrittura non attivo — vedi avviso in alto.", true);
+      return false;
+    }
+    try {
+      const writable = await this.backupHandle.createWritable();
+      await writable.write(JSON.stringify(this.snapshot(), null, 2));
+      await writable.close();
+      this.ultimoBackup = new Date();
+      renderHeaderStatus();
+      renderBackupSettings();
+      if (manuale) showToast("Backup salvato.");
+      return true;
+    } catch (e) {
+      console.error("[Storage] scrittura backup fallita", e);
+      this.permessoScrittura = "denied";
+      renderPersistBanner();
+      if (manuale) showToast("Scrittura del backup fallita — vedi avviso in alto.", true);
+      return false;
+    }
+  },
+
+  avviaBackupPeriodico() {
+    if (this.backupTimer) clearInterval(this.backupTimer);
+    this.backupTimer = setInterval(() => this.scriviBackup(false), BACKUP_INTERVAL_MS);
+  },
+
+  async importaBackup() {
+    if (!("showOpenFilePicker" in window)) {
+      showToast("Il browser non supporta la selezione file. Serve Chrome o Edge desktop.", true);
+      return;
+    }
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: "Backup FantaIgor2026", accept: { "application/json": [".json"] } }]
+      });
+      const file = await handle.getFile();
+      const testo = await file.text();
+      const snap = JSON.parse(testo);
+      if (!snap || !Array.isArray(snap.acquisti) || !Array.isArray(snap.partecipanti)) {
+        showToast("File non valido: struttura non riconosciuta.", true);
+        return;
+      }
+      if (AppState.acquisti.length > 0) {
+        const ok = confirm(
+          `Verranno sostituiti ${AppState.acquisti.length} acquisti già registrati con i ${snap.acquisti.length} presenti nel backup.\nQuesta operazione non è reversibile. Confermi?`
+        );
+        if (!ok) return;
+      }
+      this.applicaSnapshot(snap);
+      await this.salvaStatoCaldo();
+      renderTutto();
+      showToast("Backup importato correttamente.");
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        console.error("[Storage] import fallito", e);
+        showToast("Import fallito: file non leggibile o corrotto.", true);
+      }
+    }
+  }
+};
+
+/* ---------------------------------------------------------
+   4. FUNZIONI DERIVATE
+--------------------------------------------------------- */
+
+function baseAsta(giocatore) { return giocatore[AppState.sessioneAttiva.colonna_base]; }
+
+function idGiocatoriAssegnati() {
+  return new Set(
+    AppState.acquisti
+      .filter(a => a.sessione_id === AppState.sessioneAttiva.id || !a.sessione_id)
+      .map(a => a.giocatore_id)
+  );
+}
+
+function giocatoriLiberi() {
+  const assegnati = idGiocatoriAssegnati();
+  return AppState.catalogo.filter(g => !assegnati.has(g.id));
+}
+
+function acquistiDi(partecipanteId) {
+  return AppState.acquisti.filter(a => a.partecipante_id === partecipanteId);
+}
+
+function conteggioRuolo(partecipanteId, ruolo) {
+  const idAcquistati = new Set(acquistiDi(partecipanteId).map(a => a.giocatore_id));
+  return AppState.catalogo.filter(g => idAcquistati.has(g.id) && g.ruolo === ruolo).length;
+}
+
+function conteggioTotale(partecipanteId) { return acquistiDi(partecipanteId).length; }
+
+/**
+ * Crediti residui. Se è presente una correzione manuale (§4.3 project doc,
+ * dopo un avviso di sforamento) quella vince sempre sul valore derivato.
+ */
+function creditiResidui(partecipante) {
+  if (partecipante.correzioneCrediti != null) return partecipante.correzioneCrediti;
+  const speso = acquistiDi(partecipante.id).reduce((s, a) => s + a.prezzo, 0);
+  return partecipante.crediti_iniziali - speso;
+}
+
+function ruoloInCorso() {
+  for (const ruolo of ORDINE_RUOLI) {
+    const qualcunoIncompleto = AppState.partecipanti.some(
+      p => conteggioRuolo(p.id, ruolo) < SLOT_PER_RUOLO[ruolo]
+    );
+    if (qualcunoIncompleto) return ruolo;
+  }
+  return null;
+}
+
+function calcolaTurno() {
+  const ruolo = ruoloInCorso();
+  if (!ruolo) return { ruolo: null, partecipante: null, manuale: false };
+
+  // Override manuale (una-tantum): se impostato e quel partecipante ha ancora
+  // slot nel ruolo in corso, vince. Si azzera dopo l'acquisto successivo.
+  if (AppState.ui.turnoOverride) {
+    const forzato = AppState.partecipanti.find(p => p.id === AppState.ui.turnoOverride);
+    if (forzato && conteggioRuolo(forzato.id, ruolo) < SLOT_PER_RUOLO[ruolo]) {
+      return { ruolo, partecipante: forzato, manuale: true };
+    }
+  }
+
+  const candidati = AppState.partecipanti.filter(
+    p => conteggioRuolo(p.id, ruolo) < SLOT_PER_RUOLO[ruolo]
+  );
+
+  // valore di un partecipante per un dato criterio
+  const valore = (p, campo) => {
+    if (campo === "giocatori") return conteggioTotale(p.id);
+    if (campo === "crediti") return creditiResidui(p);
+    if (campo === "alfabetico") return p.nome_squadra.toLowerCase();
+    return 0;
+  };
+
+  const criteri = AppState.impostazioni.criteriTurno || [
+    { campo: "giocatori", dir: "asc" }, { campo: "crediti", dir: "desc" }, { campo: "alfabetico", dir: "asc" }
+  ];
+
+  candidati.sort((a, b) => {
+    for (const c of criteri) {
+      const va = valore(a, c.campo), vb = valore(b, c.campo);
+      let cmp = 0;
+      if (typeof va === "string") cmp = va.localeCompare(vb);
+      else cmp = va - vb;
+      if (cmp !== 0) return c.dir === "desc" ? -cmp : cmp;
+    }
+    // tie-break stabile finale, sempre alfabetico ascendente
+    return a.nome_squadra.toLowerCase().localeCompare(b.nome_squadra.toLowerCase());
+  });
+
+  return { ruolo, partecipante: candidati[0], manuale: false };
+}
+
+function sogliaSostenibile(partecipante) {
+  const slotVuoti = ORDINE_RUOLI.reduce(
+    (tot, r) => tot + (SLOT_PER_RUOLO[r] - conteggioRuolo(partecipante.id, r)), 0
+  );
+  return creditiResidui(partecipante) - (slotVuoti - 1);
+}
+
+/* ---------------------------------------------------------
+   5. ALGORITMO DI SUGGERIMENTO (§5.2, invariato dalla Fase 3)
+--------------------------------------------------------- */
+const SLOT_TOTALI_RUOLO = { P:18, D:48, C:48, A:36 };
+
+function valoreGiocatore(g) {
+  if (g.mv == null && g.fm == null) return null;
+  switch (g.ruolo) {
+    case "P":
+    case "D":
+      return (g.mv || 0) + (g.p65 || 0) / 100 * 2 + (g.pv || 0) / 38 * 1.5;
+    case "C":
+      return (g.fm || 0) + (g.fvm || 0) / 50;
+    case "A":
+      return (g.fvm || 0) / 20 + (g.fm || 0);
+    default:
+      return null;
+  }
+}
+
+function valoreSostituto(ruolo, liberi) {
+  const delRuolo = liberi.filter(g => g.ruolo === ruolo).map(valoreGiocatore).filter(v => v != null).sort((a, b) => b - a);
+  if (delRuolo.length === 0) return 0;
+  const rango = Math.min(SLOT_TOTALI_RUOLO[ruolo], delRuolo.length) - 1;
+  return delRuolo[Math.max(rango, 0)];
+}
+
+function calcolaConvenienza(g, liberi) {
+  const v = valoreGiocatore(g);
+  if (v == null) return null;
+  const sostituto = valoreSostituto(g.ruolo, liberi);
+  const prezzoAtteso = Math.max(baseAsta(g) * AppState.impostazioni.moltiplicatorePrezzo, 1);
+  return (v - sostituto) / prezzoAtteso;
+}
+
+function suggerimentiPerRuolo(ruolo, opts) {
+  opts = opts || {};
+  const liberi = giocatoriLiberi();
+  let del = liberi.filter(g => g.ruolo === ruolo);
+  if (opts.squadra) del = del.filter(g => g.squadra === opts.squadra);
+  if (opts.presenzeMin) del = del.filter(g => (g.pv || 0) >= opts.presenzeMin);
+  if (opts.prezzoMin != null) del = del.filter(g => baseAsta(g) >= opts.prezzoMin);
+  if (opts.prezzoMax != null) del = del.filter(g => baseAsta(g) <= opts.prezzoMax);
+  return del
+    .map(g => ({ giocatore: g, convenienza: calcolaConvenienza(g, liberi) }))
+    .filter(x => x.convenienza != null)
+    .sort((a, b) => b.convenienza - a.convenienza);
+}
+
+/* ---------------------------------------------------------
+   6. AZIONI — ognuna che muta lo stato salva subito dopo
+--------------------------------------------------------- */
+
+function eseguiAssegnazione(giocatoreId, partecipanteId, prezzo) {
+  const giocatore = AppState.catalogo.find(g => g.id === giocatoreId);
+  const partecipante = AppState.partecipanti.find(p => p.id === partecipanteId);
+  if (!giocatore || !partecipante) return { ok:false, errore:"Giocatore o partecipante non valido." };
+  if (idGiocatoriAssegnati().has(giocatoreId)) return { ok:false, errore:"Giocatore già assegnato." };
+  if (!Number.isFinite(prezzo) || prezzo <= 0) return { ok:false, errore:"Prezzo non valido." };
+  if (prezzo < baseAsta(giocatore)) return { ok:false, errore:`Il prezzo non può essere sotto la base d'asta (${baseAsta(giocatore)}).` };
+  const ruoloCorrente = ruoloInCorso();
+  if (ruoloCorrente && giocatore.ruolo !== ruoloCorrente) {
+    return { ok:false, errore:`In corso il blocco ${NOMI_RUOLI[ruoloCorrente]}: non si possono ancora chiamare ${NOMI_RUOLI[giocatore.ruolo]}.` };
+  }
+  if (conteggioRuolo(partecipanteId, giocatore.ruolo) >= SLOT_PER_RUOLO[giocatore.ruolo]) {
+    return { ok:false, errore:`${partecipante.nome_squadra} ha già completato gli slot ${giocatore.ruolo}.` };
+  }
+
+  const sforato = prezzo > sogliaSostenibile(partecipante);
+
+  AppState.acquisti.push({
+    id: "acq_" + Date.now() + "_" + Math.floor(Math.random()*1000),
+    sessione_id: AppState.sessioneAttiva.id,
+    giocatore_id: giocatoreId,
+    partecipante_id: partecipanteId,
+    prezzo: prezzo,
+    timestamp: new Date().toISOString()
+  });
+
+  // l'override del turno vale solo per la chiamata appena registrata
+  AppState.ui.turnoOverride = null;
+
+  Storage.salvaStatoCaldo();
+  return { ok:true, sforato };
+}
+
+function annullaUltimoAcquisto() {
+  if (AppState.acquisti.length === 0) return null;
+  let ultimo = AppState.acquisti[0];
+  for (const a of AppState.acquisti) if (a.timestamp > ultimo.timestamp) ultimo = a;
+  AppState.acquisti = AppState.acquisti.filter(a => a.id !== ultimo.id);
+  Storage.salvaStatoCaldo();
+  return ultimo;
+}
+
+function resetAsta() {
+  AppState.acquisti = [];
+  for (const p of AppState.partecipanti) p.correzioneCrediti = null;
+  Storage.salvaStatoCaldo();
+}
+
+function correggiCreditiManualmente(partecipanteId, nuovoValore) {
+  const p = AppState.partecipanti.find(x => x.id === partecipanteId);
+  if (!p) return;
+  p.correzioneCrediti = nuovoValore;
+  Storage.salvaStatoCaldo();
+}
+
+/** Modifica il prezzo di un acquisto già registrato (correzione di battitura). */
+function modificaPrezzoAcquisto(acquistoId, nuovoPrezzo) {
+  const a = AppState.acquisti.find(x => x.id === acquistoId);
+  if (!a) return { ok:false, errore:"Acquisto non trovato." };
+  if (!Number.isFinite(nuovoPrezzo) || nuovoPrezzo <= 0) return { ok:false, errore:"Prezzo non valido." };
+  const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+  if (g && nuovoPrezzo < baseAsta(g)) return { ok:false, errore:`Sotto la base d'asta (${baseAsta(g)}).` };
+  a.prezzo = nuovoPrezzo;
+  Storage.salvaStatoCaldo();
+  return { ok:true };
+}
+
+/** Elimina un acquisto specifico dal log (non solo l'ultimo). */
+function eliminaAcquisto(acquistoId) {
+  AppState.acquisti = AppState.acquisti.filter(a => a.id !== acquistoId);
+  Storage.salvaStatoCaldo();
+}
+
+/** Cambia i crediti iniziali di tutti i partecipanti. I residui si ricalcolano
+    automaticamente (sono derivati); le correzioni manuali restano finché non rimosse. */
+function cambiaCreditiIniziali(nuovo) {
+  if (!Number.isFinite(nuovo) || nuovo <= 0) return false;
+  for (const p of AppState.partecipanti) p.crediti_iniziali = nuovo;
+  Storage.salvaStatoCaldo();
+  return true;
+}
+
+/** Imposta o rimuove l'override del turno. */
+function impostaTurnoOverride(partecipanteId) {
+  AppState.ui.turnoOverride = partecipanteId; // null = torna automatico
+}
+
+/* ---------------------------------------------------------
+   7. RENDERING
+--------------------------------------------------------- */
+
+function fmt(n) { return (Math.round(n * 10) / 10).toLocaleString("it-IT"); }
+
+function fmtRelativo(data) {
+  if (!data) return null;
+  const s = Math.round((Date.now() - data.getTime()) / 1000);
+  if (s < 5) return "adesso";
+  if (s < 60) return s + "s fa";
+  const m = Math.round(s / 60);
+  if (m < 60) return m + "min fa";
+  return Math.round(m / 60) + "h fa";
+}
+
+function showToast(msg, isError) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (isError ? " error" : "");
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(() => { t.className = "toast"; }, 3000);
+}
+
+function renderHeaderStatus() {
+  const el = document.getElementById("header-status");
+  el.classList.remove("err", "warn");
+  if (!Storage.indexedDbOk) {
+    el.classList.add("err");
+    el.innerHTML = `<span class="dot"></span> IndexedDB non disponibile — dati non salvati tra sessioni`;
+    return;
+  }
+  if (Storage.permessoScrittura === "granted" && Storage.backupHandle) {
+    const rel = fmtRelativo(Storage.ultimoBackup);
+    el.innerHTML = `<span class="dot"></span> Backup automatico attivo${rel ? " — ultimo salvataggio " + rel : " — in attesa del primo giro"}`;
+    return;
+  }
+  if (Storage.permessoScrittura === "nessun-file" || Storage.permessoScrittura === "unknown") {
+    el.classList.add("warn");
+    el.innerHTML = `<span class="dot"></span> Nessun file di backup impostato — vai in Impostazioni`;
+    return;
+  }
+  el.classList.add("warn");
+  el.innerHTML = `<span class="dot"></span> Backup su file in pausa — permesso da riattivare`;
+}
+
+function renderPersistBanner() {
+  const banner = document.getElementById("persist-banner");
+  const text = document.getElementById("persist-banner-text");
+  const action = document.getElementById("persist-banner-action");
+  action.onclick = null;
+
+  if (!Storage.indexedDbOk) {
+    banner.className = "persist-banner show err";
+    text.textContent = "IndexedDB non disponibile in questo browser: i dati non verranno salvati tra una sessione e l'altra. Esporta un backup manuale spesso, da Impostazioni.";
+    action.style.display = "none";
+    return;
+  }
+  if (Storage.permessoScrittura === "denied") {
+    banner.className = "persist-banner show err";
+    text.textContent = "Il permesso di scrittura sul file di backup è stato revocato. I dati restano solo in memoria del browser.";
+    action.style.display = "";
+    action.textContent = "Riscegli file";
+    action.onclick = () => Storage.sceglieFile();
+    return;
+  }
+  if (Storage.permessoScrittura === "prompt") {
+    banner.className = "persist-banner show info";
+    text.textContent = "Il backup su file è in pausa: serve una tua conferma per riprendere a scrivere.";
+    action.style.display = "";
+    action.textContent = "Riattiva backup";
+    action.onclick = () => Storage.riattivaPermesso();
+    return;
+  }
+  banner.className = "persist-banner";
+}
+
+function renderPartecipanti() {
+  const { partecipante: chiamante } = calcolaTurno();
+  const cont = document.getElementById("partecipanti-list");
+  cont.innerHTML = "";
+  for (const p of AppState.partecipanti) {
+    const cr = creditiResidui(p);
+    const slotTxt = ORDINE_RUOLI.map(r => r + conteggioRuolo(p.id, r)).join(" ");
+    const isChiamante = chiamante && chiamante.id === p.id;
+    const soglia = sogliaSostenibile(p);
+    const corretto = p.correzioneCrediti != null;
+    const row = document.createElement("div");
+    row.className = "partecipante-row";
+    row.innerHTML = `
+      <span class="pname"><span class="turno-dot${isChiamante ? "" : " inactive"}"></span>${p.nome_squadra}${p.is_utente ? " ★" : ""}</span>
+      <span class="pcredits-wrap">
+        <span class="pcredits num${cr < 30 ? " low" : ""}${corretto ? " corretto" : ""}" data-pid="${p.id}" title="Offerta max sostenibile: ${soglia}${corretto ? " — valore corretto a mano" : ""}">${cr}</span>
+      </span>
+      <span class="pslots">${slotTxt}</span>`;
+    row.querySelector(".pcredits").addEventListener("click", () => {
+      const attuale = creditiResidui(p);
+      const input = prompt(`Correggi crediti residui per ${p.nome_squadra} (attuale: ${attuale}).\nLascia vuoto per tornare al calcolo automatico.`, attuale);
+      if (input === null) return;
+      if (input.trim() === "") { correggiCreditiManualmente(p.id, null); renderTutto(); showToast("Correzione rimossa, torno al calcolo automatico."); return; }
+      const v = parseInt(input, 10);
+      if (!Number.isFinite(v)) { showToast("Valore non valido.", true); return; }
+      correggiCreditiManualmente(p.id, v);
+      renderTutto();
+      showToast(`Crediti di ${p.nome_squadra} corretti a ${v}.`);
+    });
+    cont.appendChild(row);
+  }
+}
+
+function renderSquadreLive() {
+  const cont = document.getElementById("squadre-live");
+  cont.innerHTML = "";
+  for (const p of AppState.partecipanti) {
+    const acquisti = acquistiDi(p.id);
+    const speso = acquisti.reduce((s, a) => s + a.prezzo, 0);
+    const card = document.createElement("div");
+    card.className = "squadra-live-card";
+    const players = acquisti.map(a => {
+      const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+      if (!g) return "";
+      return `<span class="mini-player"><span class="role-badge xs r-${g.ruolo.toLowerCase()}">${g.ruolo}</span>${g.nome}</span>`;
+    }).join("");
+    card.innerHTML = `
+      <div class="squadra-live-head"><span>${p.nome_squadra}</span><span>${speso} crediti spesi</span></div>
+      <div class="squadra-live-players">${players || '<span style="color:var(--text-dim);font-size:11.5px;">nessun acquisto</span>'}</div>`;
+    cont.appendChild(card);
+  }
+}
+
+function renderAssignPartecipanti() {
+  const sel = document.getElementById("assign-partecipante");
+  const cur = sel.value;
+  sel.innerHTML = AppState.partecipanti.map(p => `<option value="${p.id}">${p.nome_squadra}${p.is_utente ? " ★" : ""}</option>`).join("");
+  if (cur) sel.value = cur;
+}
+
+function renderSuggerimenti() {
+  const cont = document.getElementById("suggerimenti-list");
+  const { ruolo } = calcolaTurno();
+  if (!ruolo) {
+    cont.innerHTML = `<div class="empty-note">Asta completata.</div>`;
+    return;
+  }
+  const top = suggerimentiPerRuolo(ruolo).slice(0, 5);
+  if (top.length === 0) {
+    cont.innerHTML = `<div class="empty-note">Nessun giocatore libero con dati sufficienti in questo ruolo.</div>`;
+    return;
+  }
+  cont.innerHTML = top.map(({ giocatore, convenienza }) => `
+    <div class="sugg-item">
+      <span class="role-badge sm r-${giocatore.ruolo.toLowerCase()}">${giocatore.ruolo}</span>
+      <span class="name">${giocatore.nome} <span class="sq">${giocatore.squadra} · base ${baseAsta(giocatore)}</span></span>
+      <span class="val">+${fmt(convenienza * 100)}</span>
+    </div>`).join("");
+}
+
+function renderAnalisiAvversari() {
+  const cont = document.getElementById("analisi-avversari");
+  const righe = AppState.partecipanti.filter(p => !p.is_utente).map(p => {
+    const acquisti = acquistiDi(p.id);
+    if (acquisti.length === 0) return `${p.nome_squadra}: ancora nessun acquisto.`;
+    const perRuolo = {}; let tot = 0;
+    for (const a of acquisti) {
+      const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+      if (!g) continue;
+      perRuolo[g.ruolo] = (perRuolo[g.ruolo] || 0) + a.prezzo;
+      tot += a.prezzo;
+    }
+    const dominante = Object.entries(perRuolo).sort((a,b) => b[1]-a[1])[0];
+    if (!dominante || tot === 0) return `${p.nome_squadra}: nessun pattern rilevabile.`;
+    const quota = Math.round(dominante[1] / tot * 100);
+    const slotVuotiRuoloDominante = SLOT_PER_RUOLO[dominante[0]] - conteggioRuolo(p.id, dominante[0]);
+    return `${p.nome_squadra}: ${quota}% della spesa su ${NOMI_RUOLI[dominante[0]].toLowerCase()}` +
+           (slotVuotiRuoloDominante === 0 ? ", reparto già chiuso." : `, ${slotVuotiRuoloDominante} slot ancora liberi lì.`);
+  });
+  cont.innerHTML = righe.map(r => `<div>${r}</div>`).join("") || `<div class="empty-note">Nessun acquisto ancora registrato.</div>`;
+}
+
+/** Spesa per ruolo di un partecipante: { P:{crediti, pct}, D:{...}, ... } e totale. */
+function spesaPerRuolo(partecipanteId) {
+  const acquisti = acquistiDi(partecipanteId);
+  const out = { P:{crediti:0}, D:{crediti:0}, C:{crediti:0}, A:{crediti:0} };
+  let tot = 0;
+  for (const a of acquisti) {
+    const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+    if (!g) continue;
+    out[g.ruolo].crediti += a.prezzo;
+    tot += a.prezzo;
+  }
+  for (const r of ORDINE_RUOLI) out[r].pct = tot > 0 ? Math.round(out[r].crediti / tot * 100) : 0;
+  return { perRuolo: out, totale: tot };
+}
+
+function renderSquadreArchivio() {
+  const cont = document.getElementById("squadre-grid");
+  cont.innerHTML = "";
+  for (const p of AppState.partecipanti) {
+    const { perRuolo, totale } = spesaPerRuolo(p.id);
+    const barre = ORDINE_RUOLI.map(r => {
+      const n = conteggioRuolo(p.id, r);
+      const pctSlot = Math.round(n / SLOT_PER_RUOLO[r] * 100);
+      const sp = perRuolo[r];
+      return `<div class="slot-bar-row">
+        <span class="role-badge r-${r.toLowerCase()}">${r}</span>
+        <div class="slot-bar"><div class="slot-bar-fill" style="width:${pctSlot}%;background:var(--role-${r.toLowerCase()})"></div></div>
+        <span class="slot-count">${n}/${SLOT_PER_RUOLO[r]}</span>
+        <span class="spesa-ruolo-val">${sp.crediti} cr · ${sp.pct}%</span>
+      </div>`;
+    }).join("");
+    const ruoloAperto = ORDINE_RUOLI.find(r => conteggioRuolo(p.id, r) < SLOT_PER_RUOLO[r]);
+    const criticita = ruoloAperto
+      ? `<div class="criticita">${NOMI_RUOLI[ruoloAperto]} ancora incompleto — ${creditiResidui(p)} crediti residui</div>` : "";
+    const card = document.createElement("div");
+    card.className = "card squadra-card";
+    card.innerHTML = `
+      <div class="squadra-card-head">
+        <div><h3>${p.nome_squadra}</h3><div class="owner">${p.proprietari.join(" + ")}</div></div>
+        <div class="spesa-tot"><div class="num">${totale}</div><div class="lbl">crediti spesi</div></div>
+      </div>
+      ${barre}
+      ${criticita}
+      <div style="margin-top:12px;font-size:11.5px;color:var(--text-dim);">Click per il dettaglio completo →</div>`;
+    card.addEventListener("click", () => apriDettaglioSquadra(p.id));
+    cont.appendChild(card);
+  }
+}
+
+function renderChiAcquistare() {
+  const tbody = document.getElementById("acq-tbody");
+  const ruolo = AppState.ui.filtroRuoloAcquistare;
+  const squadraFiltro = document.getElementById("acq-filtro-squadra").value;
+  const prezzoFiltro = document.getElementById("acq-filtro-prezzo").value;
+  const presenzeFiltro = parseInt(document.getElementById("acq-filtro-presenze").value, 10) || 0;
+  const opts = { presenzeMin: presenzeFiltro || undefined };
+  if (squadraFiltro) opts.squadra = squadraFiltro;
+  if (prezzoFiltro) { const [min, max] = prezzoFiltro.split("-").map(Number); opts.prezzoMin = min; opts.prezzoMax = max; }
+  const righe = suggerimentiPerRuolo(ruolo, opts);
+  if (righe.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-note">Nessun giocatore libero corrisponde ai filtri.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = righe.map(({ giocatore: g, convenienza }) => `
+    <tr>
+      <td><div class="player-name-cell"><span class="role-badge r-${g.ruolo.toLowerCase()}">${g.ruolo}</span><div>${g.nome}<div class="sq">${g.squadra}</div></div></div></td>
+      <td class="num">${baseAsta(g)}</td>
+      <td class="num">${Math.round(baseAsta(g) * AppState.impostazioni.moltiplicatorePrezzo)}</td>
+      <td><span class="score-pill${convenienza < 0 ? " neg" : ""}">${convenienza >= 0 ? "+" : ""}${fmt(convenienza * 100)}</span></td>
+      <td><span class="metric-tag">Pv ${g.pv ?? "—"}</span><span class="metric-tag">${g.ruolo === "P" || g.ruolo === "D" ? "Mv " + g.mv.toFixed(2) : "Fm " + g.fm.toFixed(2)}</span></td>
+    </tr>`).join("");
+}
+
+function renderFiltroSquadre() {
+  const sel = document.getElementById("acq-filtro-squadra");
+  const squadre = [...new Set(AppState.catalogo.map(g => g.squadra))].sort();
+  sel.innerHTML = `<option value="">Tutte</option>` + squadre.map(s => `<option>${s}</option>`).join("");
+}
+
+function renderAlbaredo() {
+  const p = AppState.partecipanti.find(x => x.is_utente);
+  const acquisti = acquistiDi(p.id);
+  const speso = acquisti.reduce((s, a) => s + a.prezzo, 0);
+  document.getElementById("albaredo-spesa").textContent = speso;
+  document.getElementById("albaredo-stato").textContent = acquisti.length === 0 ? "Nessun acquisto registrato" : `${acquisti.length} giocatori in rosa`;
+  const cont = document.getElementById("albaredo-rosa");
+  if (acquisti.length === 0) { cont.innerHTML = `<div class="empty-note">La rosa si popola durante l'asta.</div>`; return; }
+  cont.innerHTML = ORDINE_RUOLI.map(r => {
+    const giocatoriRuolo = acquisti.map(a => ({ a, g: AppState.catalogo.find(x => x.id === a.giocatore_id) })).filter(x => x.g && x.g.ruolo === r);
+    if (giocatoriRuolo.length === 0) return "";
+    return `<div class="formazione-role-group">
+      <h4><span class="role-badge sm r-${r.toLowerCase()}">${r}</span>${NOMI_RUOLI[r]}</h4>
+      ${giocatoriRuolo.map(({a,g}) => `<div class="formazione-player-row"><span>${g.nome}</span><span class="fv">${a.prezzo} cr.</span></div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+function renderBackupSettings() {
+  document.getElementById("backup-file-note").textContent =
+    Storage.backupHandle ? (Storage.backupHandle.name || BACKUP_FILENAME) + (Storage.permessoScrittura !== "granted" ? " (permesso da riattivare)" : "") : "Nessun file scelto";
+  document.getElementById("ultimo-backup-note").textContent =
+    Storage.ultimoBackup ? "Ultimo salvataggio " + fmtRelativo(Storage.ultimoBackup) : "Mai eseguito";
+}
+
+function renderTutto() {
+  renderTurnoUI();
+  renderPartecipanti();
+  renderSquadreLive();
+  renderAssignPartecipanti();
+  renderSuggerimenti();
+  renderAnalisiAvversari();
+  renderSquadreArchivio();
+  renderChiAcquistare();
+  renderAlbaredo();
+  renderListone();
+  renderBlocnotes();
+  renderCriteriTurno();
+  renderBackupSettings();
+  renderHeaderStatus();
+}
+
+/* ---------------------------------------------------------
+   CRITERI TURNO configurabili (Impostazioni)
+--------------------------------------------------------- */
+const CRITERIO_LABEL = { giocatori: "Numero di giocatori in rosa", crediti: "Crediti residui", alfabetico: "Ordine alfabetico squadra" };
+
+function renderCriteriTurno() {
+  const cont = document.getElementById("criteri-turno-list");
+  if (!cont) return;
+  const criteri = AppState.impostazioni.criteriTurno;
+  cont.innerHTML = criteri.map((c, i) => `
+    <div class="criterio-row">
+      <span class="criterio-ord">${i + 1}.</span>
+      <select class="input campo" data-i="${i}">
+        ${Object.keys(CRITERIO_LABEL).map(k => `<option value="${k}"${k === c.campo ? " selected" : ""}>${CRITERIO_LABEL[k]}</option>`).join("")}
+      </select>
+      <select class="input dir" data-i="${i}">
+        <option value="asc"${c.dir === "asc" ? " selected" : ""}>${c.campo === "alfabetico" ? "A → Z" : "crescente"}</option>
+        <option value="desc"${c.dir === "desc" ? " selected" : ""}>${c.campo === "alfabetico" ? "Z → A" : "decrescente"}</option>
+      </select>
+      <span class="criterio-updown">
+        <button class="su" data-i="${i}" ${i === 0 ? "disabled" : ""}>▲</button>
+        <button class="giu" data-i="${i}" ${i === criteri.length - 1 ? "disabled" : ""}>▼</button>
+      </span>
+    </div>`).join("");
+
+  cont.querySelectorAll(".campo").forEach(sel => sel.addEventListener("change", e => {
+    const i = Number(e.target.dataset.i);
+    AppState.impostazioni.criteriTurno[i].campo = e.target.value;
+    Storage.salvaStatoCaldo();
+    renderCriteriTurno();
+    renderTurnoUI(); renderPartecipanti();
+  }));
+  cont.querySelectorAll(".dir").forEach(sel => sel.addEventListener("change", e => {
+    const i = Number(e.target.dataset.i);
+    AppState.impostazioni.criteriTurno[i].dir = e.target.value;
+    Storage.salvaStatoCaldo();
+    renderTurnoUI(); renderPartecipanti();
+  }));
+  cont.querySelectorAll(".su").forEach(btn => btn.addEventListener("click", e => spostaCriterio(Number(e.target.dataset.i), -1)));
+  cont.querySelectorAll(".giu").forEach(btn => btn.addEventListener("click", e => spostaCriterio(Number(e.target.dataset.i), 1)));
+}
+
+function spostaCriterio(i, delta) {
+  const arr = AppState.impostazioni.criteriTurno;
+  const j = i + delta;
+  if (j < 0 || j >= arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
+  Storage.salvaStatoCaldo();
+  renderCriteriTurno();
+  renderTurnoUI(); renderPartecipanti();
+}
+
+/* ---------------------------------------------------------
+   LISTONE — pannello a scomparsa, filtri + ordinamento
+--------------------------------------------------------- */
+
+/** Valore ordinabile di un giocatore per un dato campo del listone. */
+function valoreOrdinamento(g, campo) {
+  switch (campo) {
+    case "ruolo": return ORDINE_RUOLI.indexOf(g.ruolo);
+    case "nome": return g.nome.toLowerCase();
+    case "squadra": return g.squadra.toLowerCase();
+    case "base": return baseAsta(g);
+    case "fm": return g.fm != null ? g.fm : -1;
+    case "titolarita": { const t = titolaritaDi(g); return t != null ? parseFloat(t) : -1; }
+    case "nota": return notaDi(g.id) ? 1 : 0;
+    default: return 0;
+  }
+}
+
+function listoneFiltratoOrdinato() {
+  const f = AppState.ui.listoneFiltri;
+  const assegnati = idGiocatoriAssegnati();
+  let righe = AppState.catalogo.slice();
+
+  if (f.cerca) { const t = f.cerca.toLowerCase(); righe = righe.filter(g => g.nome.toLowerCase().includes(t)); }
+  if (f.ruolo) righe = righe.filter(g => g.ruolo === f.ruolo);
+  if (f.squadra) righe = righe.filter(g => g.squadra === f.squadra);
+  if (f.stato === "libero") righe = righe.filter(g => !assegnati.has(g.id));
+  if (f.stato === "preso") righe = righe.filter(g => assegnati.has(g.id));
+  if (f.soloNote === "si") righe = righe.filter(g => notaDi(g.id));
+
+  const { campo, dir } = AppState.ui.listoneSort;
+  righe.sort((a, b) => {
+    const va = valoreOrdinamento(a, campo), vb = valoreOrdinamento(b, campo);
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    // tie-break stabile per nome
+    return a.nome.toLowerCase().localeCompare(b.nome.toLowerCase());
+  });
+  return righe;
+}
+
+function infoAcquisto(giocatoreId) {
+  const acq = AppState.acquisti.find(a => a.giocatore_id === giocatoreId);
+  if (!acq) return null;
+  const p = AppState.partecipanti.find(x => x.id === acq.partecipante_id);
+  return { squadra: p ? p.nome_squadra : "?", prezzo: acq.prezzo };
+}
+
+function renderListone() {
+  // popola il filtro squadre una volta
+  const selSq = document.getElementById("lst-squadra");
+  if (selSq.options.length <= 1) {
+    const squadre = [...new Set(AppState.catalogo.map(g => g.squadra))].sort();
+    selSq.innerHTML = `<option value="">Tutte</option>` + squadre.map(s => `<option>${s}</option>`).join("");
+    selSq.value = AppState.ui.listoneFiltri.squadra;
+  }
+
+  // frecce di ordinamento sull'header
+  document.querySelectorAll("#lst-header th[data-sort]").forEach(th => {
+    const arrow = th.querySelector(".arrow");
+    if (th.dataset.sort === AppState.ui.listoneSort.campo) {
+      arrow.textContent = AppState.ui.listoneSort.dir === 1 ? "▲" : "▼";
+    } else arrow.textContent = "";
+  });
+
+  const righe = listoneFiltratoOrdinato();
+  const assegnati = idGiocatoriAssegnati();
+  const countTxt = `${righe.length} giocatori · ${AppState.catalogo.length - assegnati.size} liberi su ${AppState.catalogo.length}`;
+  document.getElementById("listone-count").textContent = countTxt;
+  document.getElementById("listone-count-drawer").textContent = countTxt;
+
+  const tbody = document.getElementById("lst-tbody");
+  if (righe.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = righe.map(g => {
+    const preso = assegnati.has(g.id);
+    const info = preso ? infoAcquisto(g.id) : null;
+    const tit = titolaritaDi(g);
+    const nota = notaDi(g.id);
+    const inModifica = AppState.ui.notaInModifica === g.id;
+    const notaCell = inModifica
+      ? `<textarea class="l-nota-edit" data-id="${g.id}" autofocus>${nota.replace(/</g,"&lt;")}</textarea>`
+      : `<span class="l-nota-text${nota ? "" : " vuota"}" data-id="${g.id}">${nota ? nota.replace(/</g,"&lt;") : "aggiungi nota…"}</span>`;
+    return `<tr class="${preso ? "preso" : ""}">
+      <td><span class="role-badge sm r-${g.ruolo.toLowerCase()}">${g.ruolo}</span></td>
+      <td class="l-nome">${g.nome}</td>
+      <td>${g.squadra}</td>
+      <td class="num">${baseAsta(g)}</td>
+      <td class="num">${g.fm != null ? g.fm.toFixed(2) : "—"}</td>
+      <td class="l-titolarita">${tit != null ? tit + "%" : "—"}</td>
+      <td class="l-nota-cell">${notaCell}${info ? `<div class="l-preso-info">→ ${info.squadra} · ${info.prezzo}</div>` : ""}</td>
+    </tr>`;
+  }).join("");
+
+  // click su nota -> modalità modifica
+  tbody.querySelectorAll(".l-nota-text").forEach(el => {
+    el.addEventListener("click", () => { AppState.ui.notaInModifica = Number(el.dataset.id); renderListone(); });
+  });
+  // textarea in modifica -> salva su blur/Enter, chiudi
+  const ta = tbody.querySelector(".l-nota-edit");
+  if (ta) {
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    const chiudi = () => {
+      salvaNotaGiocatore(Number(ta.dataset.id), ta.value);
+      AppState.ui.notaInModifica = null;
+      renderListone();
+    };
+    ta.addEventListener("blur", chiudi);
+    ta.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chiudi(); }
+      if (e.key === "Escape") { AppState.ui.notaInModifica = null; renderListone(); }
+    });
+  }
+}
+
+/* ---------------------------------------------------------
+   BLOC-NOTES — autosalvato
+--------------------------------------------------------- */
+function renderBlocnotes() {
+  const ta = document.getElementById("blocnotes");
+  if (document.activeElement !== ta) ta.value = AppState.blocnotes || "";
+}
+
+function renderTurnoUI() {
+  const { ruolo, partecipante, manuale } = calcolaTurno();
+  const banner = document.getElementById("turno-banner");
+  const sq = document.getElementById("turno-squadra");
+  const ruoloTesto = document.getElementById("turno-ruolo-testo");
+  const badge = document.getElementById("turno-ruolo-badge");
+  const overrideBtn = document.getElementById("turno-override-btn");
+  banner.classList.remove("override");
+  if (!ruolo) {
+    banner.classList.add("chiusa");
+    sq.textContent = "Asta completata"; ruoloTesto.textContent = "—"; badge.textContent = ""; badge.className = "role-badge";
+    overrideBtn.style.display = "none";
+    return;
+  }
+  banner.classList.remove("chiusa");
+  overrideBtn.style.display = "";
+  sq.innerHTML = partecipante.nome_squadra + (manuale ? '<span class="turno-manuale-tag">forzato</span>' : "");
+  if (manuale) banner.classList.add("override");
+  overrideBtn.textContent = manuale ? "Torna al calcolo automatico" : "Forza turno a mano";
+  ruoloTesto.textContent = NOMI_RUOLI[ruolo];
+  badge.textContent = ruolo;
+  badge.className = "role-badge r-" + ruolo.toLowerCase();
+}
+
+/* ---------------------------------------------------------
+   MODALE riutilizzabile
+--------------------------------------------------------- */
+function apriModale(titolo, htmlCorpo) {
+  document.getElementById("modal-title").textContent = titolo;
+  document.getElementById("modal-body").innerHTML = htmlCorpo;
+  document.getElementById("modal-overlay").classList.add("open");
+  return document.getElementById("modal-body");
+}
+function chiudiModale() {
+  document.getElementById("modal-overlay").classList.remove("open");
+  document.getElementById("modal-body").innerHTML = "";
+}
+
+/* ---- Dettaglio squadra (modale) ---- */
+function apriDettaglioSquadra(partecipanteId) {
+  const p = AppState.partecipanti.find(x => x.id === partecipanteId);
+  if (!p) return;
+  const { perRuolo, totale } = spesaPerRuolo(p.id);
+  const acquisti = acquistiDi(p.id);
+
+  const spesaRuoloHtml = ORDINE_RUOLI.map(r => {
+    const sp = perRuolo[r];
+    return `<div class="spesa-ruolo-row">
+      <span class="role-badge r-${r.toLowerCase()}">${r}</span>
+      <div class="spesa-ruolo-bar"><div class="spesa-ruolo-bar-fill" style="width:${sp.pct}%;background:var(--role-${r.toLowerCase()})"></div></div>
+      <span class="spesa-ruolo-val">${sp.crediti} cr · ${sp.pct}%</span>
+    </div>`;
+  }).join("");
+
+  const rosaHtml = ORDINE_RUOLI.map(r => {
+    const gruppo = acquisti
+      .map(a => ({ a, g: AppState.catalogo.find(x => x.id === a.giocatore_id) }))
+      .filter(x => x.g && x.g.ruolo === r);
+    if (gruppo.length === 0) return `<div class="dett-rosa-group"><h4><span class="role-badge sm r-${r.toLowerCase()}">${r}</span>${NOMI_RUOLI[r]} <span style="color:var(--text-dim);font-weight:400;">— vuoto (0/${SLOT_PER_RUOLO[r]})</span></h4></div>`;
+    return `<div class="dett-rosa-group">
+      <h4><span class="role-badge sm r-${r.toLowerCase()}">${r}</span>${NOMI_RUOLI[r]} <span style="color:var(--text-dim);font-weight:400;">— ${gruppo.length}/${SLOT_PER_RUOLO[r]}</span></h4>
+      ${gruppo.map(({a,g}) => `<div class="dett-player-row"><span>${g.nome}<span class="sq">${g.squadra}</span></span><span class="prezzo">${a.prezzo} cr</span></div>`).join("")}
+    </div>`;
+  }).join("");
+
+  apriModale(`${p.nome_squadra} — ${p.proprietari.join(" + ")}`, `
+    <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:6px;">Spesa per ruolo</div>
+    <div class="spesa-ruolo-grid">${spesaRuoloHtml}</div>
+    <div class="dett-summary"><span>Totale speso</span><b>${totale} cr</b></div>
+    <div class="dett-summary" style="border-top:none;padding-top:0;"><span>Crediti residui</span><b>${creditiResidui(p)} cr</b></div>
+    <div style="height:10px;"></div>
+    <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:10px;">Rosa completa</div>
+    ${rosaHtml}
+  `);
+}
+
+/* ---- Log acquisti completo (modale) ---- */
+function apriLogAcquisti() {
+  const body = apriModale("Log acquisti", "");
+  renderLogAcquisti(body);
+}
+function renderLogAcquisti(body) {
+  body = body || document.getElementById("modal-body");
+  const acquisti = AppState.acquisti.slice().sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  if (acquisti.length === 0) { body.innerHTML = `<div class="log-empty">Nessun acquisto registrato.</div>`; return; }
+  body.innerHTML = acquisti.map(a => {
+    const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+    const p = AppState.partecipanti.find(x => x.id === a.partecipante_id);
+    return `<div class="log-row" data-id="${a.id}">
+      <span class="role-badge sm r-${g ? g.ruolo.toLowerCase() : ""}">${g ? g.ruolo : "?"}</span>
+      <span>${g ? g.nome : "?"}</span>
+      <span style="color:var(--text-dim);">${p ? p.nome_squadra : "?"}</span>
+      <span class="log-prezzo">${a.prezzo}</span>
+      <span class="log-actions">
+        <button class="edit" data-id="${a.id}">Modifica prezzo</button>
+        <button class="del" data-id="${a.id}">Elimina</button>
+      </span>
+    </div>`;
+  }).join("");
+
+  body.querySelectorAll(".log-actions .edit").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const a = AppState.acquisti.find(x => x.id === id);
+      const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+      const input = prompt(`Nuovo prezzo per ${g ? g.nome : "giocatore"} (attuale: ${a.prezzo}):`, a.prezzo);
+      if (input === null) return;
+      const v = parseInt(input, 10);
+      const res = modificaPrezzoAcquisto(id, v);
+      if (!res.ok) { showToast(res.errore, true); return; }
+      renderLogAcquisti(body);
+      renderTutto();
+      showToast("Prezzo aggiornato.");
+    });
+  });
+  body.querySelectorAll(".log-actions .del").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      const a = AppState.acquisti.find(x => x.id === id);
+      const g = AppState.catalogo.find(x => x.id === a.giocatore_id);
+      if (!confirm(`Eliminare l'acquisto di ${g ? g.nome : "questo giocatore"}?`)) return;
+      eliminaAcquisto(id);
+      renderLogAcquisti(body);
+      renderTutto();
+      showToast("Acquisto eliminato.");
+    });
+  });
+}
+
+/* ---------------------------------------------------------
+   FESTA acquisto — coriandoli + card
+--------------------------------------------------------- */
+const FESTA_COLORI = ["#d4af37","#3ddc84","#4a90d9","#f0a500","#e2574c","#ffffff"];
+function festaAcquisto(nomeGiocatore, dettaglio) {
+  const overlay = document.getElementById("festa-overlay");
+  const card = document.getElementById("festa-card");
+  document.getElementById("festa-nome").textContent = nomeGiocatore;
+  document.getElementById("festa-dett").textContent = dettaglio;
+
+  // pulisco coriandoli precedenti
+  overlay.querySelectorAll(".confetto").forEach(c => c.remove());
+  overlay.classList.add("on");
+
+  // genero coriandoli
+  const N = 90;
+  for (let i = 0; i < N; i++) {
+    const c = document.createElement("div");
+    c.className = "confetto";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = FESTA_COLORI[i % FESTA_COLORI.length];
+    c.style.borderRadius = Math.random() > .5 ? "50%" : "2px";
+    const dur = 1.6 + Math.random() * 1.2;
+    const delay = Math.random() * .5;
+    const drift = (Math.random() - .5) * 240;
+    const rot = 360 + Math.random() * 720;
+    c.animate([
+      { transform: `translate(0,-20px) rotate(0deg)`, opacity: 1 },
+      { transform: `translate(${drift}px, 100vh) rotate(${rot}deg)`, opacity: .9 }
+    ], { duration: dur * 1000, delay: delay * 1000, easing: "cubic-bezier(.25,.6,.5,1)" });
+    overlay.appendChild(c);
+  }
+
+  card.classList.remove("pop");
+  void card.offsetWidth; // forza reflow per riavviare l'animazione
+  card.classList.add("pop");
+
+  clearTimeout(festaAcquisto._h);
+  festaAcquisto._h = setTimeout(() => {
+    overlay.classList.remove("on");
+    overlay.querySelectorAll(".confetto").forEach(c => c.remove());
+  }, 2100);
+}
+
+
+
+function renderAutocomplete(testo) {
+  const list = document.getElementById("autocomplete-list");
+  if (!testo || testo.trim().length < 3) { list.classList.remove("open"); list.innerHTML = ""; return; }
+  const t = testo.trim().toLowerCase();
+  const assegnati = idGiocatoriAssegnati();
+  const risultati = AppState.catalogo.filter(g => g.nome.toLowerCase().includes(t)).slice(0, 8);
+  if (risultati.length === 0) { list.innerHTML = `<div class="autocomplete-item">Nessun risultato</div>`; list.classList.add("open"); return; }
+  list.innerHTML = risultati.map(g => {
+    const preso = assegnati.has(g.id);
+    return `<div class="autocomplete-item${preso ? " taken" : ""}" data-id="${g.id}">
+      <span class="left"><span class="role-badge xs r-${g.ruolo.toLowerCase()}">${g.ruolo}</span>${g.nome} <span class="sq">${g.squadra}</span></span>
+      <span class="base">${preso ? "assegnato" : "base " + baseAsta(g)}</span>
+    </div>`;
+  }).join("");
+  list.classList.add("open");
+  list.querySelectorAll(".autocomplete-item[data-id]").forEach(el => {
+    el.addEventListener("click", () => {
+      const id = Number(el.dataset.id);
+      if (idGiocatoriAssegnati().has(id)) return;
+      selezionaGiocatore(id);
+    });
+  });
+}
+
+function selezionaGiocatore(id) {
+  const g = AppState.catalogo.find(x => x.id === id);
+  if (!g) return;
+  AppState.ui.giocatoreSelezionatoId = id;
+  document.getElementById("ricerca-input").value = "";
+  document.getElementById("autocomplete-list").classList.remove("open");
+  const chip = document.getElementById("selected-chip");
+  document.getElementById("selected-chip-text").innerHTML = `<span class="role-badge xs r-${g.ruolo.toLowerCase()}">${g.ruolo}</span> ${g.nome} — ${g.squadra} · base ${baseAsta(g)}`;
+  chip.classList.add("show");
+}
+
+function deselezionaGiocatore() {
+  AppState.ui.giocatoreSelezionatoId = null;
+  document.getElementById("selected-chip").classList.remove("show");
+}
+
+/* ---------------------------------------------------------
+   9. EVENT LISTENER
+--------------------------------------------------------- */
+
+document.getElementById("ricerca-input").addEventListener("input", e => renderAutocomplete(e.target.value));
+document.getElementById("selected-chip-rm").addEventListener("click", deselezionaGiocatore);
+
+document.getElementById("btn-conferma").addEventListener("click", () => {
+  const errEl = document.getElementById("assign-error");
+  const sforamentoEl = document.getElementById("sforamento-note");
+  const prezzoInput = document.getElementById("assign-prezzo");
+  errEl.classList.remove("show"); sforamentoEl.classList.remove("show"); prezzoInput.classList.remove("input-error");
+
+  const giocatoreId = AppState.ui.giocatoreSelezionatoId;
+  const partecipanteId = document.getElementById("assign-partecipante").value;
+  const prezzo = parseInt(prezzoInput.value, 10);
+
+  if (giocatoreId == null) { errEl.textContent = "Seleziona prima un giocatore dalla ricerca."; errEl.classList.add("show"); return; }
+  if (!Number.isFinite(prezzo)) { errEl.textContent = "Inserisci un prezzo valido."; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); return; }
+
+  const risultato = eseguiAssegnazione(giocatoreId, partecipanteId, prezzo);
+  if (!risultato.ok) { errEl.textContent = risultato.errore; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); return; }
+  if (risultato.sforato) {
+    sforamentoEl.textContent = "⚠ Offerta oltre la soglia sostenibile per questo partecipante — registrata comunque, correggi i crediti cliccandoci sopra se necessario.";
+    sforamentoEl.classList.add("show");
+  }
+  const gAcq = AppState.catalogo.find(x => x.id === giocatoreId);
+  const pAcq = AppState.partecipanti.find(x => x.id === partecipanteId);
+  deselezionaGiocatore();
+  prezzoInput.value = "";
+  renderTutto();
+  // festa solo quando il giocatore lo prende FC Albaredo
+  if (pAcq && pAcq.is_utente) festaAcquisto(gAcq ? gAcq.nome : "Giocatore", `${pAcq.nome_squadra} · ${prezzo} crediti`);
+  showToast("Acquisto registrato.");
+});
+
+document.getElementById("btn-annulla").addEventListener("click", () => {
+  const rimosso = annullaUltimoAcquisto();
+  if (!rimosso) { showToast("Nessun acquisto da annullare.", true); return; }
+  const g = AppState.catalogo.find(x => x.id === rimosso.giocatore_id);
+  renderTutto();
+  showToast(`Annullato: ${g ? g.nome : "giocatore"}.`);
+});
+
+document.getElementById("btn-reset").addEventListener("click", () => {
+  if (!confirm("Reset asta: tutti gli acquisti registrati (e le correzioni manuali dei crediti) verranno cancellati. Confermi?")) return;
+  if (!confirm("Conferma definitiva: procedere con il reset?")) return;
+  resetAsta();
+  renderTutto();
+  showToast("Asta azzerata.");
+});
+
+document.getElementById("acq-role-filter").addEventListener("change", e => { AppState.ui.filtroRuoloAcquistare = e.target.value; renderChiAcquistare(); });
+document.getElementById("acq-filtro-squadra").addEventListener("change", renderChiAcquistare);
+document.getElementById("acq-filtro-prezzo").addEventListener("change", renderChiAcquistare);
+document.getElementById("acq-filtro-presenze").addEventListener("change", renderChiAcquistare);
+
+document.getElementById("param-moltiplicatore").addEventListener("change", e => {
+  const v = parseFloat(e.target.value.replace(",", "."));
+  if (Number.isFinite(v) && v > 0) {
+    AppState.impostazioni.moltiplicatorePrezzo = v;
+    Storage.salvaStatoCaldo();
+    renderChiAcquistare();
+    renderSuggerimenti();
+  }
+});
+
+document.getElementById("toggle-muto").addEventListener("click", function() {
+  AppState.impostazioni.muto = !AppState.impostazioni.muto;
+  this.classList.toggle("on", AppState.impostazioni.muto);
+  Storage.salvaStatoCaldo();
+});
+document.getElementById("volume-range").addEventListener("input", e => {
+  AppState.impostazioni.volume = e.target.value / 100;
+  document.getElementById("volume-note").textContent = e.target.value + "%";
+});
+document.getElementById("volume-range").addEventListener("change", () => Storage.salvaStatoCaldo());
+
+document.getElementById("btn-reset-criteri").addEventListener("click", () => {
+  AppState.impostazioni.criteriTurno = [
+    { campo: "giocatori", dir: "asc" },
+    { campo: "crediti", dir: "desc" },
+    { campo: "alfabetico", dir: "asc" }
+  ];
+  Storage.salvaStatoCaldo();
+  renderCriteriTurno();
+  renderTurnoUI(); renderPartecipanti();
+  showToast("Regola del turno ripristinata a quella standard.");
+});
+
+document.getElementById("btn-scegli-file").addEventListener("click", () => Storage.sceglieFile());
+document.getElementById("btn-esporta-ora").addEventListener("click", () => Storage.scriviBackup(true));
+document.getElementById("btn-importa").addEventListener("click", () => Storage.importaBackup());
+
+// ---- modale: chiusura ----
+document.getElementById("modal-close").addEventListener("click", chiudiModale);
+document.getElementById("modal-overlay").addEventListener("click", e => {
+  if (e.target.id === "modal-overlay") chiudiModale();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") chiudiModale(); });
+
+// ---- log acquisti (pop-up) ----
+document.getElementById("btn-log-acquisti").addEventListener("click", apriLogAcquisti);
+
+// ---- turno override ----
+document.getElementById("turno-override-btn").addEventListener("click", () => {
+  if (AppState.ui.turnoOverride) {
+    impostaTurnoOverride(null);
+    renderTutto();
+    showToast("Turno tornato al calcolo automatico.");
+    return;
+  }
+  const { ruolo } = calcolaTurno();
+  const candidati = AppState.partecipanti.filter(p => conteggioRuolo(p.id, ruolo) < SLOT_PER_RUOLO[ruolo]);
+  const opzioni = candidati.map((p, i) => `${i + 1}. ${p.nome_squadra}`).join("\n");
+  const scelta = prompt(`Forza il turno su quale squadra?\n\n${opzioni}\n\nInserisci il numero:`);
+  if (scelta === null) return;
+  const idx = parseInt(scelta, 10) - 1;
+  if (!candidati[idx]) { showToast("Scelta non valida.", true); return; }
+  impostaTurnoOverride(candidati[idx].id);
+  renderTutto();
+  showToast(`Turno forzato su ${candidati[idx].nome_squadra}.`);
+});
+
+// ---- crediti iniziali modificabili ----
+document.getElementById("param-crediti-iniziali").addEventListener("change", e => {
+  const v = parseInt(e.target.value, 10);
+  if (!Number.isFinite(v) || v <= 0) { showToast("Valore non valido.", true); e.target.value = AppState.partecipanti[0].crediti_iniziali; return; }
+  const attuale = AppState.partecipanti[0].crediti_iniziali;
+  if (v === attuale) return;
+  if (AppState.acquisti.length > 0) {
+    if (!confirm(`Cambiare i crediti iniziali da ${attuale} a ${v} per tutti i partecipanti?\nI crediti residui si ricalcolano sulla nuova base (eventuali correzioni manuali restano).`)) {
+      e.target.value = attuale; return;
+    }
+  }
+  cambiaCreditiIniziali(v);
+  renderTutto();
+  showToast(`Crediti iniziali impostati a ${v}.`);
+});
+
+// ---- LISTONE ----
+document.getElementById("btn-toggle-listone").addEventListener("click", () => {
+  AppState.ui.listoneAperto = !AppState.ui.listoneAperto;
+  const drawer = document.getElementById("listone-drawer");
+  drawer.classList.toggle("open", AppState.ui.listoneAperto);
+  document.getElementById("btn-toggle-listone").textContent = AppState.ui.listoneAperto ? "Nascondi listone" : "Mostra listone";
+  if (AppState.ui.listoneAperto) renderListone();
+});
+
+document.getElementById("lst-cerca").addEventListener("input", e => { AppState.ui.listoneFiltri.cerca = e.target.value; renderListone(); });
+document.getElementById("lst-ruolo").addEventListener("change", e => { AppState.ui.listoneFiltri.ruolo = e.target.value; renderListone(); });
+document.getElementById("lst-squadra").addEventListener("change", e => { AppState.ui.listoneFiltri.squadra = e.target.value; renderListone(); });
+document.getElementById("lst-stato").addEventListener("change", e => { AppState.ui.listoneFiltri.stato = e.target.value; renderListone(); });
+document.getElementById("lst-note").addEventListener("change", e => { AppState.ui.listoneFiltri.soloNote = e.target.value; renderListone(); });
+document.getElementById("lst-reset-filtri").addEventListener("click", () => {
+  AppState.ui.listoneFiltri = { cerca: "", ruolo: "", squadra: "", stato: "", soloNote: "" };
+  document.getElementById("lst-cerca").value = "";
+  document.getElementById("lst-ruolo").value = "";
+  document.getElementById("lst-squadra").value = "";
+  document.getElementById("lst-stato").value = "";
+  document.getElementById("lst-note").value = "";
+  renderListone();
+});
+
+document.querySelectorAll("#lst-header th[data-sort]").forEach(th => {
+  th.addEventListener("click", () => {
+    const campo = th.dataset.sort;
+    const s = AppState.ui.listoneSort;
+    if (s.campo === campo) s.dir *= -1; else { s.campo = campo; s.dir = 1; }
+    renderListone();
+  });
+});
+
+// ---- BLOC-NOTES autosalvato ----
+let blocnotesTimer = null;
+document.getElementById("blocnotes").addEventListener("input", e => {
+  AppState.blocnotes = e.target.value;
+  const saved = document.getElementById("blocnotes-saved");
+  saved.classList.remove("show");
+  clearTimeout(blocnotesTimer);
+  blocnotesTimer = setTimeout(() => {
+    Storage.salvaStatoCaldo();
+    saved.classList.add("show");
+    setTimeout(() => saved.classList.remove("show"), 1500);
+  }, 500);
+});
+
+document.addEventListener("click", e => {
+  const wrap = document.querySelector(".autocomplete-wrap");
+  if (wrap && !wrap.contains(e.target)) document.getElementById("autocomplete-list").classList.remove("open");
+});
+
+// Salva un'ultima volta prima di chiudere/aggiornare la scheda.
+window.addEventListener("beforeunload", () => { Storage.salvaStatoCaldo(); });
+
+/* ---------------------------------------------------------
+   10. AVVIO
+--------------------------------------------------------- */
+
+function renderSplash(statoEsistente) {
+  const actions = document.getElementById("splash-actions");
+  const status = document.getElementById("splash-status");
+
+  if (statoEsistente && statoEsistente.acquisti && statoEsistente.acquisti.length > 0) {
+    actions.innerHTML = `
+      <button class="btn-enter" id="btn-riprendi">Riprendi asta</button>
+      <button class="btn-enter secondary" id="btn-riparti">Riparti da capo</button>`;
+    document.getElementById("btn-riprendi").addEventListener("click", () => {
+      Storage.applicaSnapshot(statoEsistente);
+      renderTutto();
+      document.getElementById("screen-app").checked = true;
+    });
+    document.getElementById("btn-riparti").addEventListener("click", () => {
+      if (!confirm("Tutti i dati salvati verranno cancellati. Confermi?")) return;
+      if (!confirm("Conferma definitiva: ripartire da capo?")) return;
+      AppState.acquisti = [];
+      AppState.partecipanti = partecipantiDefault();
+      Storage.salvaStatoCaldo();
+      renderTutto();
+      document.getElementById("screen-app").checked = true;
+    });
+    status.innerHTML = `<div class="splash-note"><span class="dot ok"></span> Trovato uno stato salvato: ${statoEsistente.acquisti.length} acquisti registrati (${statoEsistente.salvatoIl ? new Date(statoEsistente.salvatoIl).toLocaleString("it-IT") : "data sconosciuta"})</div>`;
+  } else {
+    actions.innerHTML = `<label for="screen-app" class="btn-enter">Entra</label>`;
+    status.innerHTML = "";
+  }
+
+  if (!Storage.indexedDbOk) {
+    status.innerHTML += `<div class="splash-note warn"><span class="dot err"></span> IndexedDB non disponibile in questo browser — i dati non verranno salvati automaticamente</div>`;
+  } else if (Storage.permessoScrittura === "nessun-file") {
+    status.innerHTML += `<div class="splash-note"><span class="dot"></span> Nessun file di backup ancora scelto — impostalo da Impostazioni appena entri</div>`;
+  } else if (Storage.permessoScrittura === "prompt" || Storage.permessoScrittura === "denied") {
+    status.innerHTML += `<div class="splash-note warn"><span class="dot err"></span> Backup su file in pausa — riattivalo da Impostazioni</div>`;
+  }
+}
+
+async function avvia() {
+  document.getElementById("catalogo-info").textContent = `${CATALOGO_TEST.length} giocatori di test — il catalogo reale nasce in Fase 1`;
+  renderFiltroSquadre();
+
+  await Storage.apri();
+  const statoEsistente = await Storage.caricaStatoCaldo();
+  await Storage.ripristinaHandle();
+
+  renderSplash(statoEsistente);
+  renderPersistBanner();
+  renderTutto();
+
+  // sincronizzo il campo crediti iniziali col valore effettivo
+  document.getElementById("param-crediti-iniziali").value = AppState.partecipanti[0].crediti_iniziali;
+  document.getElementById("param-moltiplicatore").value = AppState.impostazioni.moltiplicatorePrezzo;
+
+  // il rendering della barra di stato (tempo trascorso dall'ultimo backup) si aggiorna da solo
+  setInterval(() => { renderHeaderStatus(); renderBackupSettings(); }, 5000);
+
+  Storage.avviaBackupPeriodico();
+
+  console.log("[FantaIgor2026] Fase 4 avviata.", {
+    indexedDbOk: Storage.indexedDbOk,
+    permessoScrittura: Storage.permessoScrittura,
+    statoPrecedenteTrovato: !!statoEsistente
+  });
+}
+
+avvia();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    FantaIgor2026 — icona di partenza.
+    Quadrato pieno 512x512 (il sistema operativo applica la maschera arrotondata
+    da solo, se mai la userai come icona installabile). Coerente con la splash:
+    sfondo quasi-nero, monogramma "FI" in oro, accenno di campo da gioco.
+    Aprila in CorelDraw, modifica a piacere, esporta in icon-512.png (512x512)
+    e icon-192.png (192x192).
+  -->
+
+  <defs>
+    <linearGradient id="sfondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12151a"/>
+      <stop offset="1" stop-color="#0b0d10"/>
+    </linearGradient>
+    <linearGradient id="oro" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6c657"/>
+      <stop offset="0.5" stop-color="#d4af37"/>
+      <stop offset="1" stop-color="#a9862a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- fondo pieno -->
+  <rect width="512" height="512" fill="url(#sfondo)"/>
+
+  <!-- accenno di linee da campo, molto tenui -->
+  <g stroke="#3ddc84" stroke-opacity="0.10" stroke-width="3" fill="none">
+    <line x1="256" y1="40" x2="256" y2="472"/>
+    <circle cx="256" cy="256" r="70"/>
+    <rect x="40" y="176" width="60" height="160" rx="4"/>
+    <rect x="412" y="176" width="60" height="160" rx="4"/>
+  </g>
+
+  <!-- cornice oro sottile -->
+  <rect x="34" y="34" width="444" height="444" rx="72" fill="none"
+        stroke="url(#oro)" stroke-opacity="0.35" stroke-width="4"/>
+
+  <!-- monogramma FI -->
+  <g font-family="'Oswald','Arial Narrow',sans-serif" font-weight="700" fill="url(#oro)">
+    <text x="256" y="330" font-size="248" text-anchor="middle" letter-spacing="-6">FI</text>
+  </g>
+
+  <!-- anno, piccolo, in basso -->
+  <text x="256" y="432" font-family="'Oswald','Arial Narrow',sans-serif" font-weight="600"
+        font-size="46" fill="#8b939e" text-anchor="middle" letter-spacing="6">2026</text>
+</svg>
