@@ -398,6 +398,22 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
 .l-nota-text.vuota{ color: var(--text-dim); font-style:italic; }
 .l-nota-edit{ width:100%; background: var(--surface); border:1px solid var(--accent); border-radius:5px; color:var(--text); font-family:var(--font-body); font-size:12px; padding:6px 8px; resize:vertical; min-height:44px; }
 .l-titolarita{ font-variant-numeric: tabular-nums; }
+.tit-badge{ font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:5px; white-space:nowrap; }
+.tit-badge.tit-tit{ background:rgba(61,220,132,.14); color:var(--role-c); border:1px solid rgba(61,220,132,.35); }
+.tit-badge.tit-ball{ background:rgba(240,165,0,.13); color:var(--role-p); border:1px solid rgba(240,165,0,.35); }
+.tit-badge.tit-ris{ background:rgba(139,147,158,.13); color:var(--text-secondary); border:1px solid rgba(139,147,158,.3); }
+
+/* ---- stelle valutazione personale ---- */
+.stelle{ display:inline-flex; gap:1px; cursor:default; white-space:nowrap; }
+.stella{ font-size:15px; line-height:1; color:var(--border); cursor:pointer; transition:color .08s, transform .08s; user-select:none; }
+.stella:hover{ transform:scale(1.2); }
+.stella.on{ color:var(--accent); }
+.stelle:hover .stella{ color:var(--border); }
+.stelle:hover .stella:hover,
+.stelle:hover .stella:hover ~ .stella{ color:var(--border); }
+.stelle .stella:hover,
+.stelle:has(.stella:hover) .stella{ color:var(--border); }
+/* riempimento progressivo in hover gestito via JS per semplicità/compatibilità */
 
 /* ---- badge fascia SosFanta ---- */
 .fascia-badge{
@@ -550,7 +566,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
     <input type="radio" name="tab" id="tab-albaredo" class="tab-radio">
 
     <header class="shell-header">
-      <div class="brand"><span class="mark">FI</span>FantaIgor<b>2026</b><span class="app-version">v1.12</span></div>
+      <div class="brand"><span class="mark">FI</span>FantaIgor<b>2026</b><span class="app-version">v1.13</span></div>
       <nav class="tabs">
         <label for="tab-acquistare">Chi acquistare</label>
         <label for="tab-asta">Asta</label>
@@ -612,6 +628,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
           <th data-sort="base" class="sortable">Base<span class="arrow"></span></th>
           <th data-sort="atteso" class="sortable">Prezzo atteso<span class="arrow"></span></th>
           <th data-sort="convenienza" class="sortable">Convenienza<span class="arrow"></span></th>
+          <th data-sort="stelle" class="sortable">Interesse<span class="arrow"></span></th>
           <th data-sort="pv" class="sortable">Pv<span class="arrow"></span></th>
           <th data-sort="mv" class="sortable">Mv<span class="arrow"></span></th>
           <th data-sort="fm" class="sortable">Fm<span class="arrow"></span></th>
@@ -687,6 +704,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
                 <th data-sort="base">Base<span class="arrow"></span></th>
                 <th data-sort="fm">Fantamedia<span class="arrow"></span></th>
                 <th data-sort="fascia" title="Fascia secondo la guida asta SosFanta 2026/27. Ordine di importanza interpretato da Claude, SosFanta non pubblica una scala numerica.">Fascia SosFanta<span class="arrow"></span></th>
+                <th data-sort="stelle" title="La tua valutazione personale, 0-5 stelle. Cliccabile.">Interesse<span class="arrow"></span></th>
                 <th data-sort="titolarita">Titolarità<span class="arrow"></span></th>
                 <th data-sort="nota">Note<span class="arrow"></span></th>
               </tr>
@@ -826,6 +844,15 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
             <div><div class="row-label">Soglia porta+difesa per avviso F9</div><div class="row-note">% del budget — se superi questa soglia scatta il promemoria sul tuo difetto storico</div></div>
             <input class="input" id="param-soglia-f9" style="width:70px;" value="28" inputmode="numeric">
           </div>
+          <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+            <div><div class="row-label">Soglia minima di rendimento (fantamedia)</div><div class="row-note">Sotto questa fantamedia un giocatore non è considerato conveniente, per quanto costi poco. Scale diverse per ruolo.</div></div>
+            <div style="display:flex;gap:10px;">
+              <label style="flex:1;font-size:11.5px;color:var(--text-dim);">P<input class="input sr-input" data-r="P" style="width:100%;margin-top:3px;" value="5.2"></label>
+              <label style="flex:1;font-size:11.5px;color:var(--text-dim);">D<input class="input sr-input" data-r="D" style="width:100%;margin-top:3px;" value="5.6"></label>
+              <label style="flex:1;font-size:11.5px;color:var(--text-dim);">C<input class="input sr-input" data-r="C" style="width:100%;margin-top:3px;" value="5.8"></label>
+              <label style="flex:1;font-size:11.5px;color:var(--text-dim);">A<input class="input sr-input" data-r="A" style="width:100%;margin-top:3px;" value="5.8"></label>
+            </div>
+          </div>
         </div>
 
         <div class="card settings-section">
@@ -919,7 +946,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
       </div>
     </div>
 
-    <div class="footer-note">FantaIgor2026 v1.12 — dati salvati in locale (IndexedDB) + backup su file. Chrome/Edge desktop.</div>
+    <div class="footer-note">FantaIgor2026 v1.13 — dati salvati in locale (IndexedDB) + backup su file. Chrome/Edge desktop.</div>
 
   </div>
 </div>
@@ -1491,6 +1518,7 @@ const AppState = {
   // Note per-giocatore: { [giocatore_id]: "testo" }. Legate all'Id, non alla
   // posizione nel listone, così sopravvivono al reimport del listone (§7 richiesta Igor).
   noteGiocatori: {},
+  stelleGiocatori: {},   // id -> 0..5, valutazione personale di Igor
   // Bloc-notes generale dell'asta, testo libero unico.
   blocnotes: "",
   impostazioni: {
@@ -1511,6 +1539,10 @@ const AppState = {
     escludiRiserve: true,
     // Soglia % budget (porta+difesa) oltre la quale scatta l'avviso F9
     // Derivata dai dati storici 2024/25 di Igor. Modificabile.
+    // Soglia minima di fantamedia sotto la quale un giocatore non è considerato
+    // "conveniente" per quanto costi poco (un titolare scarso resta scarso).
+    // Scale diverse per ruolo: i portieri hanno fantamedie più basse per natura.
+    sogliaRendimento: { P: 5.2, D: 5.6, C: 5.8, A: 5.8 },
     sogliaF9: 28,
     // Ordine dei criteri per il turno di chiamata. Ogni voce: { campo, dir }.
     // campo: "giocatori" | "crediti" | "alfabetico". dir: "asc" | "desc".
@@ -1554,13 +1586,80 @@ const AppState = {
   }
 };
 
-/* Il catalogo reale (Fase 1) porterà i campi titolarita e note_default dal
-   file che caricherà Igor. Il catalogo di test non li ha: le funzioni sotto
-   trattano l'assenza come "—", così quando arriveranno i dati entreranno
-   senza modifiche al codice. */
-function titolaritaDi(g) {
-  return (g.titolarita != null && g.titolarita !== "") ? g.titolarita : null;
+/* Stima della titolarità in tre categorie: "titolare" | "ballottaggio" | "riserva".
+   Non esiste un dato numerico pre-campionato affidabile, quindi si deriva dai
+   segnali disponibili: presenze storiche (pv), fascia SosFanta, e le note testuali
+   (che contengono ballottaggi con il nome del rivale e indicazioni "titolare"/"riserva").
+   Ritorna { cat, rivale } dove rivale è il nome dell'avversario nel ballottaggio, se noto. */
+function stimaTitolarita(g) {
+  const nota = (notaDi(g.id) || "");
+  const notaLow = nota.toLowerCase();
+
+  // 1) segnali espliciti di RISERVA hanno priorità (anche sopra "ballottaggio",
+  //    perché "parte dietro X" è più informativo di una menzione generica)
+  if (/parte dietro|vice\b|secondo portiere|terzo portiere|chiuso dalla concorrenza|difficilmente diventer|non giocher|riserva\b/i.test(notaLow)) {
+    return { cat: "riserva", rivale: null };
+  }
+
+  // 2) ballottaggio esplicito: estraggo il nome del rivale dai pattern reali delle note
+  if (/ballottaggio/i.test(nota)) {
+    let rivale = null;
+    // pattern osservati: "Ballottaggio con X", "ballottaggio serrato con X",
+    // "si gioca il posto con X", "insegue X", "contende ... a X", "avanti su X"
+    const patterns = [
+      /ballottaggio(?:\s+serrato)?\s+con\s+([A-ZÀ-Ù][\wàèéìòù'’.-]+(?:\s+[A-Z]\.)?)/,
+      /si gioca (?:il posto|la (?:fascia|maglia)|la porta)[^.]*?\bcon\s+([A-ZÀ-Ù][\wàèéìòù'’.-]+(?:\s+[A-Z]\.)?)/,
+      /\b(?:avanti su|leggermente avanti su|insegue|contende il ruolo a)\s+([A-ZÀ-Ù][\wàèéìòù'’.-]+(?:\s+[A-Z]\.)?)/,
+    ];
+    for (const p of patterns) {
+      const m = nota.match(p);
+      if (m) { rivale = m[1].replace(/[.,;:].*$/, "").trim(); break; }
+    }
+    return { cat: "ballottaggio", rivale };
+  }
+
+  // 3) segnali espliciti di TITOLARE
+  if (/titolare (?:designato|scelto|fisso)|nettamente favorito|prima scelta netta|sarà (?:il )?titolare/i.test(notaLow)) {
+    return { cat: "titolare", rivale: null };
+  }
+
+  // 4) inferenza dai dati quando la nota non dice nulla di esplicito
+  const fasciaRank = g.fascia_rank;
+  const pv = g.pv;
+  if (pv == null) {
+    if (fasciaRank != null && fasciaRank <= 5) return { cat: "titolare", rivale: null };
+    if (fasciaRank != null && fasciaRank <= 12) return { cat: "ballottaggio", rivale: null };
+    return { cat: "riserva", rivale: null };
+  }
+  if (pv >= 28) return { cat: "titolare", rivale: null };
+  if (pv >= 15) {
+    if (fasciaRank != null && fasciaRank <= 5) return { cat: "titolare", rivale: null };
+    return { cat: "ballottaggio", rivale: null };
+  }
+  return { cat: "riserva", rivale: null };
 }
+
+/* Etichetta leggibile della titolarità, es. "Titolare", "Ballottaggio con Turati", "Riserva". */
+function titolaritaLabel(g) {
+  const t = stimaTitolarita(g);
+  if (t.cat === "titolare") return "Titolare";
+  if (t.cat === "riserva") return "Riserva";
+  return t.rivale ? `Ballottaggio con ${t.rivale}` : "Ballottaggio";
+}
+
+/* Valore usato per l'ordinamento titolarità: titolare > ballottaggio > riserva. */
+function titolaritaOrd(g) {
+  const c = stimaTitolarita(g).cat;
+  return c === "titolare" ? 3 : c === "ballottaggio" ? 2 : 1;
+}
+
+/* Peso 0..1 della titolarità, usato dall'algoritmo di convenienza per non premiare
+   chi rende ma non gioca. */
+function pesoTitolarita(g) {
+  const c = stimaTitolarita(g).cat;
+  return c === "titolare" ? 1 : c === "ballottaggio" ? 0.6 : 0.15;
+}
+
 /** Nota effettiva di un giocatore: quella scritta da Igor ha priorità sulla
     nota_default che potrà arrivare col catalogo (es. da ricerca notizie). */
 function notaDi(id) {
@@ -1572,6 +1671,55 @@ function salvaNotaGiocatore(id, testo) {
   if (testo == null || testo.trim() === "") delete AppState.noteGiocatori[id];
   else AppState.noteGiocatori[id] = testo;
   Storage.salvaStatoCaldo();
+}
+
+/** Stelle (0..5) assegnate da Igor a un giocatore. 0 = non valutato. */
+function stelleDi(id) {
+  return AppState.stelleGiocatori[id] || 0;
+}
+function salvaStelle(id, n) {
+  n = Math.max(0, Math.min(5, n | 0));
+  if (n === 0) delete AppState.stelleGiocatori[id];
+  else AppState.stelleGiocatori[id] = n;
+  Storage.salvaStatoCaldo();
+  // aggiorno entrambe le viste così restano sincronizzate
+  if (typeof renderChiAcquistare === "function") renderChiAcquistare();
+  if (typeof renderListone === "function") renderListone();
+}
+/** Genera l'HTML delle 5 stelle cliccabili per un giocatore. */
+function stelleHTML(id) {
+  const val = stelleDi(id);
+  let s = `<span class="stelle" data-id="${id}">`;
+  for (let i = 1; i <= 5; i++) {
+    s += `<span class="stella${i <= val ? " on" : ""}" data-id="${id}" data-n="${i}">★</span>`;
+  }
+  s += `</span>`;
+  return s;
+}
+
+/** Aggancia i click sulle stelle in un contenitore (listone o Chi acquistare).
+    Click su una stella imposta quel valore; ri-click sulla stessa stella già
+    piena azzera. Hover mostra l'anteprima. */
+function agganciaStelle(root) {
+  root.querySelectorAll(".stelle").forEach(cont => {
+    const id = Number(cont.dataset.id);
+    const stelle = cont.querySelectorAll(".stella");
+    stelle.forEach(st => {
+      st.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const n = Number(st.dataset.n);
+        salvaStelle(id, stelleDi(id) === n ? 0 : n);
+      });
+      st.addEventListener("mouseenter", () => {
+        const n = Number(st.dataset.n);
+        stelle.forEach(s => s.style.color = Number(s.dataset.n) <= n ? "var(--accent)" : "var(--border)");
+      });
+    });
+    cont.addEventListener("mouseleave", () => {
+      const val = stelleDi(id);
+      stelle.forEach(s => s.style.color = Number(s.dataset.n) <= val ? "var(--accent)" : "var(--border)");
+    });
+  });
 }
 
 /* ---------------------------------------------------------
@@ -1679,6 +1827,7 @@ const Storage = {
       partecipanti: AppState.partecipanti,
       acquisti: AppState.acquisti,
       noteGiocatori: AppState.noteGiocatori,
+      stelleGiocatori: AppState.stelleGiocatori,
       blocnotes: AppState.blocnotes,
       impostazioni: AppState.impostazioni
     };
@@ -1702,6 +1851,7 @@ const Storage = {
     AppState.partecipanti = snap.partecipanti || AppState.partecipanti;
     AppState.acquisti = snap.acquisti || [];
     AppState.noteGiocatori = snap.noteGiocatori || {};
+    AppState.stelleGiocatori = snap.stelleGiocatori || {};
     AppState.blocnotes = snap.blocnotes || "";
     AppState.impostazioni = Object.assign({}, AppState.impostazioni, snap.impostazioni || {});
     return true;
@@ -1945,19 +2095,33 @@ function sogliaSostenibile(partecipante) {
 --------------------------------------------------------- */
 const SLOT_TOTALI_RUOLO = { P:18, D:48, C:48, A:36 };
 
+/**
+ * Valore atteso di un giocatore per la stagione. Combina il rendimento (fantamedia,
+ * media voto, fantavalore per ruolo) con QUANTO gioca: un rendimento alto su poche
+ * partite vale meno di un rendimento buono ma continuo. La continuità entra qui,
+ * non solo come filtro, così un titolare mediocre può battere una riserva brillante.
+ */
 function valoreGiocatore(g) {
   if (g.mv == null && g.fm == null) return null;
+  let rendimento;
   switch (g.ruolo) {
     case "P":
     case "D":
-      return (g.mv || 0) + (g.p65 || 0) / 100 * 2 + (g.pv || 0) / 38 * 1.5;
+      rendimento = (g.mv || 0) + (g.p65 || 0) / 100 * 2 + (g.pv || 0) / 38 * 1.5;
+      break;
     case "C":
-      return (g.fm || 0) + (g.fvm || 0) / 50;
+      rendimento = (g.fm || 0) + (g.fvm || 0) / 50;
+      break;
     case "A":
-      return (g.fvm || 0) / 20 + (g.fm || 0);
+      rendimento = (g.fvm || 0) / 20 + (g.fm || 0);
+      break;
     default:
       return null;
   }
+  // Sconto di continuità: pesa il rendimento per quanto il giocatore gioca davvero.
+  // Titolare = pieno, ballottaggio = ridotto, riserva = fortemente ridotto.
+  // Questo evita la trappola "fantamedia alta su 8 presenze" (caso Perin/Pinco Pallino).
+  return rendimento * pesoTitolarita(g);
 }
 
 function valoreSostituto(ruolo, liberi) {
@@ -1982,18 +2146,39 @@ function denominatoreConvenienza(g) {
   return Math.max(prezzoAtteso(g), pav);
 }
 
-/** Un giocatore è una riserva se ha uno storico e dice che gioca poco. */
+/** Un giocatore è una riserva se ha uno storico e dice che gioca poco,
+    oppure se la stima titolarità lo classifica come riserva. */
 function eRiserva(g) {
+  if (stimaTitolarita(g).cat === "riserva") return true;
   const soglia = AppState.impostazioni.presenzeMinime || 0;
   return g.pv != null && g.pv < soglia;
 }
 
-/** Convenienza = (valore - sostituto) / prezzo atteso, con pavimento. */
+/**
+ * Convenienza = (valore - sostituto) / prezzo atteso, con pavimento.
+ * Misura quanto un giocatore è sottovalutato: quanto valore aggiunge rispetto
+ * al miglior sostituto libero, per ogni credito speso. Poiché il valore è già
+ * scontato per la continuità (vedi valoreGiocatore), chi non gioca non risulta
+ * conveniente anche se costa poco e ha buoni numeri sulle poche partite fatte.
+ */
 function calcolaConvenienza(g, liberi) {
   const v = valoreGiocatore(g);
   if (v == null) return null;
   const sostituto = valoreSostituto(g.ruolo, liberi);
-  return (v - sostituto) / denominatoreConvenienza(g);
+  let conv = (v - sostituto) / denominatoreConvenienza(g);
+
+  // Soglia di rendimento: un giocatore con fantamedia sotto la soglia del suo ruolo
+  // non è un affare per quanto costi poco. Sopra soglia nessun effetto; appena
+  // sotto la penalità è lieve e cresce col divario, così non c'è uno scalino netto.
+  const soglie = AppState.impostazioni.sogliaRendimento || {};
+  const soglia = soglie[g.ruolo];
+  const rif = g.fm != null ? g.fm : g.mv;   // per P/D senza fm uso la media voto
+  if (soglia != null && rif != null && rif < soglia && conv > 0) {
+    const divario = soglia - rif;            // quanto è sotto
+    const fattore = Math.max(0, 1 - divario * 1.2);  // -20% ogni 0.1 di fm sotto soglia (circa)
+    conv *= fattore;
+  }
+  return conv;
 }
 
 function suggerimentiPerRuolo(ruolo, opts) {
@@ -2371,7 +2556,7 @@ function renderChiAcquistare() {
   }
 
   if (righe.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
     return;
   }
 
@@ -2384,6 +2569,7 @@ function renderChiAcquistare() {
       case "base": return baseAsta(g);
       case "atteso": return prezzoAtteso(g);
       case "convenienza": return riga.convenienza != null ? riga.convenienza : -Infinity;
+      case "stelle": return stelleDi(g.id);
       case "pv": return g.pv != null ? g.pv : -1;
       case "mv": return g.mv != null ? g.mv : -1;
       case "fm": return g.fm != null ? g.fm : -1;
@@ -2420,6 +2606,7 @@ function renderChiAcquistare() {
       <td class="num">${baseAsta(g)}</td>
       <td class="num">${prezzoAtteso(g)}</td>
       <td>${convHtml}</td>
+      <td>${stelleHTML(g.id)}</td>
       <td class="num">${g.pv ?? "—"}</td>
       <td class="num">${g.mv != null ? g.mv.toFixed(2) : "—"}</td>
       <td class="num">${g.fm != null ? g.fm.toFixed(2) : "—"}</td>
@@ -2431,6 +2618,7 @@ function renderChiAcquistare() {
   tbody.querySelectorAll(".acq-nota-text").forEach(el => {
     el.addEventListener("click", () => { AppState.ui.acqNotaInModifica = Number(el.dataset.id); renderChiAcquistare(); });
   });
+  agganciaStelle(tbody);
   const ta = tbody.querySelector(".acq-nota-edit");
   if (ta) {
     ta.focus();
@@ -2676,7 +2864,8 @@ function valoreOrdinamento(g, campo) {
     case "squadra": return g.squadra.toLowerCase();
     case "base": return baseAsta(g);
     case "fm": return g.fm != null ? g.fm : -1;
-    case "titolarita": { const t = titolaritaDi(g); return t != null ? parseFloat(t) : -1; }
+    case "titolarita": return titolaritaOrd(g);
+    case "stelle": return stelleDi(g.id);
     case "fascia": return g.fascia_rank != null ? g.fascia_rank : 999;
     case "nota": return notaDi(g.id) ? 1 : 0;
     default: return 0;
@@ -2738,14 +2927,14 @@ function renderListone() {
 
   const tbody = document.getElementById("lst-tbody");
   if (righe.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
     return;
   }
 
   tbody.innerHTML = righe.map(g => {
     const preso = assegnati.has(g.id);
     const info = preso ? infoAcquisto(g.id) : null;
-    const tit = titolaritaDi(g);
+    const tit = titolaritaLabel(g);
     const nota = notaDi(g.id);
     const inModifica = AppState.ui.notaInModifica === g.id;
     const notaCell = inModifica
@@ -2760,7 +2949,8 @@ function renderListone() {
       <td class="num">${baseAsta(g)}</td>
       <td class="num">${g.fm != null ? g.fm.toFixed(2) : "—"}</td>
       <td>${fasciaTxt ? `<span class="fascia-badge ${fasciaClasse}">${fasciaTxt}</span>` : '<span style="color:var(--text-dim);">—</span>'}</td>
-      <td class="l-titolarita">${tit != null ? tit + "%" : "—"}</td>
+      <td>${stelleHTML(g.id)}</td>
+      <td class="l-titolarita">${(() => { const c = stimaTitolarita(g).cat; const cls = c === "titolare" ? "tit-tit" : c === "ballottaggio" ? "tit-ball" : "tit-ris"; return `<span class="tit-badge ${cls}">${tit}</span>`; })()}</td>
       <td class="l-nota-cell">${notaCell}${info ? `<div class="l-preso-info">→ ${info.squadra} · ${info.prezzo}</div>` : ""}</td>
     </tr>`;
   }).join("");
@@ -2769,6 +2959,7 @@ function renderListone() {
   tbody.querySelectorAll(".l-nota-text").forEach(el => {
     el.addEventListener("click", () => { AppState.ui.notaInModifica = Number(el.dataset.id); renderListone(); });
   });
+  agganciaStelle(tbody);
   // textarea in modifica -> salva su blur/Enter, chiudi
   const ta = tbody.querySelector(".l-nota-edit");
   if (ta) {
@@ -3368,7 +3559,7 @@ function generaStatoTestuale() {
         (g.mv != null ? ` · mv ${g.mv.toFixed(2)}` : "") +
         (g.fm != null ? ` · fm ${g.fm.toFixed(2)}` : "") +
         (g.pv != null ? ` · pv ${g.pv}` : "") +
-        (titolaritaDi(g) != null ? ` · tit ${titolaritaDi(g)}%` : ""));
+        (stimaTitolarita(g).cat !== "titolare" ? ` · ${titolaritaLabel(g).toLowerCase()}` : ""));
     });
     L.push("");
   }
@@ -3396,7 +3587,7 @@ function generaStatoTestuale() {
     L.push("");
   }
 
-  L.push(`(generato il ${new Date().toLocaleString("it-IT")} — FantaIgor2026 v1.12)`);
+  L.push(`(generato il ${new Date().toLocaleString("it-IT")} — FantaIgor2026 v1.13)`);
   return L.join("\n");
 }
 
@@ -3842,6 +4033,18 @@ document.getElementById("param-presenze-minime").addEventListener("change", e =>
   showToast(`Soglia riserve impostata a ${v} presenze.`);
 });
 
+document.querySelectorAll(".sr-input").forEach(inp => {
+  inp.addEventListener("change", e => {
+    const v = parseFloat(e.target.value.replace(",", "."));
+    const r = e.target.dataset.r;
+    if (!Number.isFinite(v) || v < 0 || v > 10) { showToast("Valore non valido (0-10).", true); e.target.value = AppState.impostazioni.sogliaRendimento[r]; return; }
+    AppState.impostazioni.sogliaRendimento[r] = v;
+    Storage.salvaStatoCaldo();
+    renderChiAcquistare(); renderSuggerimenti();
+    showToast(`Soglia rendimento ${r} impostata a ${v}.`);
+  });
+});
+
 document.getElementById("param-soglia-f9").addEventListener("change", e => {
   const v = parseInt(e.target.value, 10);
   if (!Number.isFinite(v) || v < 1 || v > 100) { showToast("Inserisci un valore fra 1 e 100.", true); e.target.value = AppState.impostazioni.sogliaF9 ?? 28; return; }
@@ -4008,6 +4211,10 @@ async function avvia() {
   document.getElementById("volume-range").value = Math.round((AppState.impostazioni.volume ?? 0.6) * 100);
   document.getElementById("volume-note").textContent = Math.round((AppState.impostazioni.volume ?? 0.6) * 100) + "%";
   document.getElementById("param-soglia-f9").value = AppState.impostazioni.sogliaF9 ?? 28;
+  ["P","D","C","A"].forEach(r => {
+    const el = document.querySelector(`.sr-input[data-r="${r}"]`);
+    if (el && AppState.impostazioni.sogliaRendimento) el.value = AppState.impostazioni.sogliaRendimento[r];
+  });
   document.getElementById("param-max-avvisi").value = AppState.impostazioni.maxAvvisiVisibili || 3;
   document.getElementById("max-avvisi-label").textContent = AppState.impostazioni.maxAvvisiVisibili || 3;
   document.getElementById("param-pavimento").value = AppState.impostazioni.pavimentoPrezzo ?? 8;
