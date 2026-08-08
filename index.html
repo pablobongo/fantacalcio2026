@@ -566,7 +566,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
     <input type="radio" name="tab" id="tab-albaredo" class="tab-radio">
 
     <header class="shell-header">
-      <div class="brand"><span class="mark">FI</span>FantaIgor<b>2026</b><span class="app-version">v1.13</span></div>
+      <div class="brand"><span class="mark">FI</span>FantaIgor<b>2026</b><span class="app-version">v1.14</span></div>
       <nav class="tabs">
         <label for="tab-acquistare">Chi acquistare</label>
         <label for="tab-asta">Asta</label>
@@ -624,14 +624,16 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
 
       <table class="player-table">
         <thead><tr id="acq-header">
-          <th data-sort="nome" class="sortable">Giocatore<span class="arrow"></span></th>
+          <th data-sort="ruolo" class="sortable">Ruolo<span class="arrow"></span></th>
+          <th data-sort="nome" class="sortable">Nome<span class="arrow"></span></th>
+          <th data-sort="squadra" class="sortable">Squadra<span class="arrow"></span></th>
           <th data-sort="base" class="sortable">Base<span class="arrow"></span></th>
           <th data-sort="atteso" class="sortable">Prezzo atteso<span class="arrow"></span></th>
-          <th data-sort="convenienza" class="sortable">Convenienza<span class="arrow"></span></th>
+          <th data-sort="fm" class="sortable">Fantamedia<span class="arrow"></span></th>
           <th data-sort="stelle" class="sortable">Interesse<span class="arrow"></span></th>
           <th data-sort="pv" class="sortable">Pv<span class="arrow"></span></th>
-          <th data-sort="mv" class="sortable">Mv<span class="arrow"></span></th>
-          <th data-sort="fm" class="sortable">Fm<span class="arrow"></span></th>
+          <th data-sort="titolarita" class="sortable">Titolarità<span class="arrow"></span></th>
+          <th data-sort="fascia" class="sortable">Fascia SosFanta<span class="arrow"></span></th>
           <th data-sort="nota" class="sortable">Note<span class="arrow"></span></th>
         </tr></thead>
         <tbody id="acq-tbody"></tbody>
@@ -643,7 +645,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
       <h2 class="panel-title">Asta</h2>
       <p class="panel-sub">Tracciamento live — l'asta reale si svolge sull'app Leghe Fantacalcio.</p>
 
-      <div class="turno-banner" id="turno-banner">
+      <div class="turno-banner" id="turno-banner" style="display:none;">
         <div>
           <div class="turno-label">Turno di chiamata</div>
           <div class="turno-value" id="turno-squadra">—</div>
@@ -702,10 +704,12 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
                 <th data-sort="nome">Nome<span class="arrow"></span></th>
                 <th data-sort="squadra">Squadra<span class="arrow"></span></th>
                 <th data-sort="base">Base<span class="arrow"></span></th>
+                <th data-sort="atteso">Prezzo atteso<span class="arrow"></span></th>
                 <th data-sort="fm">Fantamedia<span class="arrow"></span></th>
-                <th data-sort="fascia" title="Fascia secondo la guida asta SosFanta 2026/27. Ordine di importanza interpretato da Claude, SosFanta non pubblica una scala numerica.">Fascia SosFanta<span class="arrow"></span></th>
                 <th data-sort="stelle" title="La tua valutazione personale, 0-5 stelle. Cliccabile.">Interesse<span class="arrow"></span></th>
+                <th data-sort="pv">Pv<span class="arrow"></span></th>
                 <th data-sort="titolarita">Titolarità<span class="arrow"></span></th>
+                <th data-sort="fascia" title="Fascia secondo la guida asta SosFanta 2026/27. Ordine di importanza interpretato da Claude, SosFanta non pubblica una scala numerica.">Fascia SosFanta<span class="arrow"></span></th>
                 <th data-sort="nota">Note<span class="arrow"></span></th>
               </tr>
             </thead>
@@ -946,7 +950,7 @@ table.listone-table tbody tr.preso .l-nome{ text-decoration: line-through; }
       </div>
     </div>
 
-    <div class="footer-note">FantaIgor2026 v1.13 — dati salvati in locale (IndexedDB) + backup su file. Chrome/Edge desktop.</div>
+    <div class="footer-note">FantaIgor2026 v1.14 — dati salvati in locale (IndexedDB) + backup su file. Chrome/Edge desktop.</div>
 
   </div>
 </div>
@@ -2213,16 +2217,19 @@ function suggerimentiPerRuolo(ruolo, opts) {
    6. AZIONI — ognuna che muta lo stato salva subito dopo
 --------------------------------------------------------- */
 
-function eseguiAssegnazione(giocatoreId, partecipanteId, prezzo) {
+function eseguiAssegnazione(giocatoreId, partecipanteId, prezzo, forza) {
   const giocatore = AppState.catalogo.find(g => g.id === giocatoreId);
   const partecipante = AppState.partecipanti.find(p => p.id === partecipanteId);
   if (!giocatore || !partecipante) return { ok:false, errore:"Giocatore o partecipante non valido." };
   if (idGiocatoriAssegnati().has(giocatoreId)) return { ok:false, errore:"Giocatore già assegnato." };
   if (!Number.isFinite(prezzo) || prezzo <= 0) return { ok:false, errore:"Prezzo non valido." };
   if (prezzo < baseAsta(giocatore)) return { ok:false, errore:`Il prezzo non può essere sotto la base d'asta (${baseAsta(giocatore)}).` };
+  // Blocco di ruolo trasformato in avviso: se stai assegnando fuori dall'ordine
+  // dei blocchi, non blocco ma segnalo (il chiamante chiede conferma). forza=true salta.
   const ruoloCorrente = ruoloInCorso();
-  if (ruoloCorrente && giocatore.ruolo !== ruoloCorrente) {
-    return { ok:false, errore:`In corso il blocco ${NOMI_RUOLI[ruoloCorrente]}: non si possono ancora chiamare ${NOMI_RUOLI[giocatore.ruolo]}.` };
+  if (!forza && ruoloCorrente && giocatore.ruolo !== ruoloCorrente) {
+    return { ok:false, fuoriOrdine:true,
+      errore:`Il blocco ruoli suggerito sarebbe ${NOMI_RUOLI[ruoloCorrente]}, ma stai assegnando ${giocatore.ruolo === "P" ? "un portiere" : giocatore.ruolo === "D" ? "un difensore" : giocatore.ruolo === "C" ? "un centrocampista" : "un attaccante"}. Vuoi procedere comunque?` };
   }
   if (conteggioRuolo(partecipanteId, giocatore.ruolo) >= SLOT_PER_RUOLO[giocatore.ruolo]) {
     return { ok:false, errore:`${partecipante.nome_squadra} ha già completato gli slot ${giocatore.ruolo}.` };
@@ -2556,7 +2563,7 @@ function renderChiAcquistare() {
   }
 
   if (righe.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
     return;
   }
 
@@ -2565,7 +2572,9 @@ function renderChiAcquistare() {
   const valOrd = (riga) => {
     const g = riga.g;
     switch (campo) {
+      case "ruolo": return ORDINE_RUOLI.indexOf(g.ruolo);
       case "nome": return g.nome.toLowerCase();
+      case "squadra": return g.squadra.toLowerCase();
       case "base": return baseAsta(g);
       case "atteso": return prezzoAtteso(g);
       case "convenienza": return riga.convenienza != null ? riga.convenienza : -Infinity;
@@ -2573,6 +2582,8 @@ function renderChiAcquistare() {
       case "pv": return g.pv != null ? g.pv : -1;
       case "mv": return g.mv != null ? g.mv : -1;
       case "fm": return g.fm != null ? g.fm : -1;
+      case "titolarita": return titolaritaOrd(g);
+      case "fascia": return g.fascia_rank != null ? -g.fascia_rank : -999;
       case "nota": return notaDi(g.id) ? 1 : 0;
       default: return 0;
     }
@@ -2598,18 +2609,21 @@ function renderChiAcquistare() {
     const notaCell = inModifica
       ? `<textarea class="l-nota-edit acq-nota-edit" data-id="${g.id}">${nota.replace(/</g,"&lt;")}</textarea>`
       : `<span class="l-nota-text acq-nota-text${nota ? "" : " vuota"}" data-id="${g.id}">${nota ? nota.replace(/</g,"&lt;") : "aggiungi nota…"}</span>`;
-    const convHtml = convenienza != null
-      ? `<span class="score-pill${convenienza < 0 ? " neg" : ""}">${convenienza >= 0 ? "+" : ""}${fmt(convenienza * 100)}</span>`
-      : `<span style="color:var(--text-dim);">—</span>`;
-    return `<tr${preso ? ' style="opacity:.5;"' : ''}>
-      <td><div class="player-name-cell"><span class="role-badge r-${g.ruolo.toLowerCase()}">${g.ruolo}</span><div><span${preso ? ' style="text-decoration:line-through;"' : ''}>${g.nome}</span>${eRiserva(g) ? '<span class="tag-riserva">riserva</span>' : ''}<div class="sq">${g.squadra}${info ? ` · <span style="color:var(--accent);">${info.squadra} · ${info.prezzo}</span>` : ""}</div></div></div></td>
+    const fasciaTxt = g.fascia || null;
+    const fasciaClasse = g.fascia_rank == null ? "" : g.fascia_rank <= 2 ? "fascia-top" : g.fascia_rank <= 5 ? "fascia-alta" : g.fascia_rank <= 9 ? "fascia-media" : g.fascia_rank <= 14 ? "fascia-bassa" : "fascia-rischio";
+    const tit = titolaritaLabel(g);
+    const titCls = (() => { const c = stimaTitolarita(g).cat; return c === "titolare" ? "tit-tit" : c === "ballottaggio" ? "tit-ball" : "tit-ris"; })();
+    return `<tr class="${preso ? "preso" : ""}">
+      <td><span class="role-badge sm r-${g.ruolo.toLowerCase()}">${g.ruolo}</span></td>
+      <td class="l-nome">${g.nome}${info ? ` <span style="color:var(--accent);font-size:11px;">→ ${info.squadra} · ${info.prezzo}</span>` : ""}</td>
+      <td>${g.squadra}</td>
       <td class="num">${baseAsta(g)}</td>
       <td class="num">${prezzoAtteso(g)}</td>
-      <td>${convHtml}</td>
+      <td class="num">${g.fm != null ? g.fm.toFixed(2) : "—"}</td>
       <td>${stelleHTML(g.id)}</td>
       <td class="num">${g.pv ?? "—"}</td>
-      <td class="num">${g.mv != null ? g.mv.toFixed(2) : "—"}</td>
-      <td class="num">${g.fm != null ? g.fm.toFixed(2) : "—"}</td>
+      <td class="l-titolarita"><span class="tit-badge ${titCls}">${tit}</span></td>
+      <td>${fasciaTxt ? `<span class="fascia-badge ${fasciaClasse}">${fasciaTxt}</span>` : '<span style="color:var(--text-dim);">—</span>'}</td>
       <td class="l-nota-cell">${notaCell}</td>
     </tr>`;
   }).join("");
@@ -2863,7 +2877,9 @@ function valoreOrdinamento(g, campo) {
     case "nome": return g.nome.toLowerCase();
     case "squadra": return g.squadra.toLowerCase();
     case "base": return baseAsta(g);
+    case "atteso": return prezzoAtteso(g);
     case "fm": return g.fm != null ? g.fm : -1;
+    case "pv": return g.pv != null ? g.pv : -1;
     case "titolarita": return titolaritaOrd(g);
     case "stelle": return stelleDi(g.id);
     case "fascia": return g.fascia_rank != null ? g.fascia_rank : 999;
@@ -2927,7 +2943,7 @@ function renderListone() {
 
   const tbody = document.getElementById("lst-tbody");
   if (righe.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-note">Nessun giocatore corrisponde ai filtri.</div></td></tr>`;
     return;
   }
 
@@ -3587,7 +3603,7 @@ function generaStatoTestuale() {
     L.push("");
   }
 
-  L.push(`(generato il ${new Date().toLocaleString("it-IT")} — FantaIgor2026 v1.13)`);
+  L.push(`(generato il ${new Date().toLocaleString("it-IT")} — FantaIgor2026 v1.14)`);
   return L.join("\n");
 }
 
@@ -3666,6 +3682,18 @@ function apriModale(titolo, htmlCorpo) {
 function chiudiModale() {
   document.getElementById("modal-overlay").classList.remove("open");
   document.getElementById("modal-body").innerHTML = "";
+}
+
+/** Modale di conferma sì/no. Esegue onConferma solo se l'utente conferma. */
+function confermaModale(messaggio, onConferma) {
+  apriModale("Conferma", `
+    <p style="font-size:13.5px;line-height:1.6;margin-bottom:18px;">${messaggio}</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn" id="conferma-no">Annulla</button>
+      <button class="btn btn-primary" id="conferma-si">Procedi</button>
+    </div>`);
+  document.getElementById("conferma-no").addEventListener("click", chiudiModale);
+  document.getElementById("conferma-si").addEventListener("click", () => { chiudiModale(); onConferma(); });
 }
 
 /* ---- Dettaglio squadra (modale) ---- */
@@ -3879,22 +3907,35 @@ document.getElementById("btn-conferma").addEventListener("click", () => {
   if (giocatoreId == null) { errEl.textContent = "Seleziona prima un giocatore dalla ricerca."; errEl.classList.add("show"); Suoni.errore(); return; }
   if (!Number.isFinite(prezzo)) { errEl.textContent = "Inserisci un prezzo valido."; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); Suoni.errore(); return; }
 
-  const risultato = eseguiAssegnazione(giocatoreId, partecipanteId, prezzo);
-  if (!risultato.ok) { errEl.textContent = risultato.errore; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); Suoni.errore(); return; }
-  if (risultato.sforato) {
-    sforamentoEl.textContent = "⚠ Offerta oltre la soglia sostenibile per questo partecipante — registrata comunque, correggi i crediti cliccandoci sopra se necessario.";
-    sforamentoEl.classList.add("show");
+  function completa(risultato) {
+    if (risultato.sforato) {
+      sforamentoEl.textContent = "⚠ Offerta oltre la soglia sostenibile per questo partecipante — registrata comunque, correggi i crediti cliccandoci sopra se necessario.";
+      sforamentoEl.classList.add("show");
+    }
+    const gAcq = AppState.catalogo.find(x => x.id === giocatoreId);
+    const pAcq = AppState.partecipanti.find(x => x.id === partecipanteId);
+    deselezionaGiocatore();
+    prezzoInput.value = "";
+    document.getElementById("prezzo-hints").innerHTML = "";
+    renderTutto();
+    if (pAcq && pAcq.is_utente) { festaAcquisto(gAcq ? gAcq.nome : "Giocatore", `${pAcq.nome_squadra} · ${prezzo} crediti`); Suoni.acquistoUtente(); }
+    else Suoni.acquisto();
+    showToast("Acquisto registrato.");
   }
-  const gAcq = AppState.catalogo.find(x => x.id === giocatoreId);
-  const pAcq = AppState.partecipanti.find(x => x.id === partecipanteId);
-  deselezionaGiocatore();
-  prezzoInput.value = "";
-  document.getElementById("prezzo-hints").innerHTML = "";
-  renderTutto();
-  // festa + fanfara solo quando il giocatore lo prende FC Albaredo
-  if (pAcq && pAcq.is_utente) { festaAcquisto(gAcq ? gAcq.nome : "Giocatore", `${pAcq.nome_squadra} · ${prezzo} crediti`); Suoni.acquistoUtente(); }
-  else Suoni.acquisto();
-  showToast("Acquisto registrato.");
+
+  let risultato = eseguiAssegnazione(giocatoreId, partecipanteId, prezzo);
+
+  // fuori dall'ordine dei blocchi ruolo: chiedo conferma invece di bloccare
+  if (!risultato.ok && risultato.fuoriOrdine) {
+    confermaModale(risultato.errore, () => {
+      const forzato = eseguiAssegnazione(giocatoreId, partecipanteId, prezzo, true);
+      if (!forzato.ok) { errEl.textContent = forzato.errore; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); Suoni.errore(); return; }
+      completa(forzato);
+    });
+    return;
+  }
+  if (!risultato.ok) { errEl.textContent = risultato.errore; errEl.classList.add("show"); prezzoInput.classList.add("input-error"); prezzoInput.focus(); Suoni.errore(); return; }
+  completa(risultato);
 });
 
 document.getElementById("btn-annulla").addEventListener("click", () => {
